@@ -1,20 +1,27 @@
+/*
+
+This server provides the user with one cube directly in front
+that mirrors the user's movements
+
+*/
+
 package main
 
 import (
 	"github.com/pebbe/util"
 
 	"bufio"
+	"errors"
 	"fmt"
+	"math"
 	"net"
 	"strconv"
 	"strings"
 )
 
-type lookat struct {
+type Request struct {
 	id   string
-	x    float64
-	y    float64
-	z    float64
+	req  string
 	resp chan string
 }
 
@@ -22,8 +29,13 @@ var (
 	x = util.CheckErr
 	w = util.WarnErr
 
-	lookats = make(chan lookat, 100)
-	users   = make(map[string]uint64)
+	requests = make(chan Request, 100)
+	users    = make(map[string]uint64)
+
+	errArgs    = errors.New("Wrong number of arguments")
+	errUnknown = errors.New("Unknown command")
+	errNan     = errors.New("Not a number")
+	errInf     = errors.New("Infinity")
 )
 
 func main() {
@@ -31,7 +43,7 @@ func main() {
 	x(err)
 	defer ln.Close()
 
-	go handleLookats()
+	go handleRequests()
 
 	for {
 		conn, err := ln.Accept()
@@ -62,67 +74,80 @@ func handleConnection(conn net.Conn) {
 		return
 	}
 	id := a[1]
-	fmt.Fprintln(conn, "ok")
+	fmt.Fprintln(conn, ".")
 
 	fmt.Println("     ", name, "=", id)
 
-LOOP:
 	for scanner.Scan() {
 		line := scanner.Text()
-		a := strings.Fields(line)
-		switch a[0] {
-		case "quit":
-			break LOOP
-		case "lookat":
-			if len(a) == 4 {
-				resp := make(chan string)
-				x, err := strconv.ParseFloat(a[1], 64)
-				if err != nil {
-					continue
-				}
-				y, err := strconv.ParseFloat(a[2], 64)
-				if err != nil {
-					continue
-				}
-				z, err := strconv.ParseFloat(a[3], 64)
-				if err != nil {
-					continue
-				}
-				r := lookat{
-					id:   id,
-					x:    x,
-					y:    y,
-					z:    z,
-					resp: resp,
-				}
-				lookats <- r
-
-				for line := range resp {
-					fmt.Fprintln(conn, line)
-				}
-			}
-			fmt.Fprintln(conn, ".")
+		if line == "quit" {
+			break
 		}
+		resp := make(chan string)
+		requests <- Request{
+			id:   id,
+			req:  line,
+			resp: resp,
+		}
+
+		for line := range resp {
+			fmt.Fprintln(conn, line)
+		}
+		fmt.Fprintln(conn, ".")
 	}
 	w(scanner.Err())
 
 }
 
-func handleLookats() {
+func handleRequests() {
+
+	invalid := func(req Request, err error) {
+		req.resp <- strings.Replace(fmt.Sprintf("error - %s - %v", req.req, err), "\n", " ", -1)
+		fmt.Printf("error %s - %s - %v\n", req.id, req.req, err)
+	}
+
 	for {
-		req := <-lookats
+		req := <-requests
 
-		u, ok := users[req.id]
-		if !ok {
-			u = 0
-			req.resp <- "self 0 -4"
-			req.resp <- "enter B"
-			req.resp <- "moveto B 0 0 0 4"
+		a := strings.Fields(req.req)
+		if len(a) > 0 {
+			switch a[0] {
+			case "reset":
+				if len(a) == 1 {
+					delete(users, req.id)
+				} else {
+					invalid(req, errArgs)
+				}
+			case "lookat":
+				if len(a) == 4 {
+					u, ok := users[req.id]
+					if !ok {
+						u = 0
+						req.resp <- "self 0 -4"
+						req.resp <- "enter B"
+						req.resp <- "moveto B 0 0 0 4"
+					}
+					z, err := strconv.ParseFloat(a[3], 64)
+					if err == nil {
+						if math.IsNaN(z) {
+							invalid(req, errNan)
+						} else if math.IsInf(z, 0) {
+							invalid(req, errInf)
+						} else {
+							req.resp <- fmt.Sprintf("lookat B %d %s %s %g", u, a[1], a[2], -z)
+							u++
+						}
+					} else {
+						invalid(req, err)
+					}
+					users[req.id] = u
+				} else {
+					invalid(req, errArgs)
+				}
+			default:
+				invalid(req, errUnknown)
+			}
 		}
-
-		req.resp <- fmt.Sprintf("lookat B %d %g %g %g", u, req.x, req.y, -req.z)
-		u++
-		users[req.id] = u
 
 		close(req.resp)
 	}
