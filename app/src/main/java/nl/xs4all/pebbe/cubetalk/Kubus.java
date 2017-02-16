@@ -25,18 +25,22 @@ public class Kubus {
             "uniform mat4 uMVPMatrix;" +
             "attribute vec3 position;" +
             "attribute vec3 color;" +
+            "uniform vec3 rgb;" +
             "varying vec3 col;" +
+            "varying vec3 cl;" +
             "void main() {" +
             "    gl_Position = uMVPMatrix * vec4(position, 1);" +
             "    col = color;" +
+            "    cl = rgb;" +
             "}";
 
     private final String fragmentShaderCode = "" +
             "precision mediump float;" +
             "uniform sampler2D texture;" +
             "varying vec3 col;" +
+            "varying vec3 cl;" +
             "void main() {" +
-            "    gl_FragColor = col[2] * texture2D(texture, vec2(col[0], col[1]));" +
+            "    gl_FragColor = vec4(col[2] * cl, 1.0) * texture2D(texture, vec2(col[0], col[1]));" +
             "}";
 
     static final int COORDS_PER_VERTEX = 3;
@@ -167,7 +171,7 @@ public class Kubus {
         bmp.recycle();
     }
 
-    public void draw(float[] mvpMatrix) {
+    public void draw(float[] mvpMatrix, float red, float green, float blue) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
         Util.checkGlError("glUseProgram");
@@ -211,6 +215,11 @@ public class Kubus {
         Util.checkGlError("glGetUniformLocation uMVPMatrix");
         GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mvpMatrix, 0);
         Util.checkGlError("glUniformMatrix4fv uMVPMatrix");
+
+        int mRgbHandle = GLES20.glGetUniformLocation(mProgram, "rgb");
+        Util.checkGlError("glGetUniformLocation rgb");
+        GLES20.glUniform3f(mRgbHandle, red, green, blue);
+        Util.checkGlError("glUniformMatrix4fv rgb");
 
         // Get handle to textures locations
         int mSamplerLoc = GLES20.glGetUniformLocation (mProgram, "texture" );

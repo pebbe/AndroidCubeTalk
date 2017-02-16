@@ -20,96 +20,14 @@
         style="@style/Widget.AppCompat.Button.Colored" />
 
     <TextView
-        android:text="@string/mode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/lbl_mode"
-        android:textSize="18sp"
-        android:layout_marginStart="32dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Spinner
-        android:id="@+id/opt_mode"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        app:layout_constraintBaseline_toBaselineOf="@+id/lbl_mode"
-        android:layout_marginStart="8dp"
-        app:layout_constraintLeft_toRightOf="@+id/lbl_mode" />
-
-    <TextView
-        android:text="@string/delay"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/lbl_delay"
-        android:layout_marginStart="32dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="48dp"
-        app:layout_constraintTop_toBottomOf="@+id/lbl_mode" />
-
-    <SeekBar
-        android:layout_height="wrap_content"
-        android:max="10"
-        android:progress="1"
-        android:id="@+id/opt_delay"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/lbl_delay"
-        android:layout_marginStart="32dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_width="0dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/val_delay"
-        android:layout_marginStart="8dp"
-        app:layout_constraintLeft_toRightOf="@+id/lbl_delay"
-        app:layout_constraintBaseline_toBaselineOf="@+id/lbl_delay" />
-
-    <TextView
-        android:text="@string/enhance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/lbl_enhance"
-        android:layout_marginStart="32dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@+id/opt_delay" />
-
-    <SeekBar
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/opt_enhance"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/lbl_enhance"
-        android:layout_marginStart="32dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintRight_toRightOf="parent"
-        android:max="8"
-        android:progress="1" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/val_enhance"
-        android:layout_marginStart="8dp"
-        app:layout_constraintLeft_toRightOf="@+id/lbl_enhance"
-        app:layout_constraintBaseline_toBaselineOf="@+id/lbl_enhance" />
-
-
-    <TextView
         android:text="@string/address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/lbl_server_address"
         android:layout_marginStart="32dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="48dp"
-        app:layout_constraintTop_toBottomOf="@+id/lbl_mode" />
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:layout_height="wrap_content"

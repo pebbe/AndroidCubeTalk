@@ -8,7 +8,7 @@
 ---------------------|---------------------------------------
 `join` {id}          | `.`
 `reset`              | `.`
-`lookat` {x} {y} {z} | `self` {n0} {z} <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `uncolor` {id} {n4} <BR> `.`
+`lookat` {x} {y} {z} | `self` {n0} {z} <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `.`
 
 `join` must be the first request for every connection.
 

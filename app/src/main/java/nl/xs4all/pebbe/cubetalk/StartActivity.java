@@ -20,7 +20,7 @@ import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-public class StartActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class StartActivity extends AppCompatActivity {
 
     private int delay = 2;
     private int enhance = 6;
@@ -32,79 +32,11 @@ public class StartActivity extends AppCompatActivity implements AdapterView.OnIt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-        int i = getIntValue(Util.kMode);
-        if (i < 0) {
-            i = 0;
-        }
-        showHideDelayed(i == 0);
-        showHideServer(i == 1);
-
-        Spinner optMode = (Spinner) findViewById(R.id.opt_mode);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.mode_array, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        optMode.setAdapter(adapter);
-        optMode.setSelection(i);
-        optMode.setOnItemSelectedListener(this);
-
-        delay = getIntValue(Util.kDelay);
-        if (delay < 0) {
-            delay = 2;
-        }
-        setDelay(delay);
-
-        SeekBar optDelay = (SeekBar) findViewById(R.id.opt_delay);
-        optDelay.setProgress(delay);
-        optDelay.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                setDelay(i);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                saveValue(Util.kDelay, ""+delay);
-            }
-        });
-
-        enhance = getIntValue(Util.kEnhance);
-        if (enhance < 0) {
-            enhance = 6;
-        }
-        setEnhance(enhance);
-
-        SeekBar optEnhance = (SeekBar) findViewById(R.id.opt_enhance);
-        optEnhance.setProgress(enhance);
-        optEnhance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                setEnhance(i);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                saveValue(Util.kEnhance, ""+enhance);
-            }
-        });
-
-
         String s = getValue(Util.kAddress);
         TextView tv = (TextView) findViewById(R.id.opt_server_address);
         tv.setText(s);
 
-        i = getIntValue(Util.kPort);
+        int i = getIntValue(Util.kPort);
         if (i > 0) {
             tv = (TextView) findViewById(R.id.opt_server_port);
             s = "" + i;
@@ -117,32 +49,6 @@ public class StartActivity extends AppCompatActivity implements AdapterView.OnIt
     protected void onStop() {
         super.onStop();
         saveServerValues();
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        saveValue(Util.kMode, ""+position);
-        showHideDelayed(position == 0);
-        showHideServer(position == 1);
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
-    }
-
-    private void setDelay(int i) {
-        delay = i;
-        TextView tv = (TextView) findViewById(R.id.val_delay);
-        String s = String.format("%.1f", 0.5 * (float)i);
-        tv.setText(s);
-    }
-
-    private void setEnhance(int i) {
-        enhance = i;
-        TextView tv = (TextView) findViewById(R.id.val_enhance);
-        String s = String.format("%.1f", 0.5 * (float)(i-4));
-        tv.setText(s);
     }
 
     private void saveServerValues() {
@@ -171,34 +77,6 @@ public class StartActivity extends AppCompatActivity implements AdapterView.OnIt
             i = Integer.parseInt(s, 10);
         }
         return i;
-    }
-
-    private void showHideDelayed(boolean show) {
-        int v = show ? View.VISIBLE : View.INVISIBLE;
-        TextView tv = (TextView) findViewById(R.id.lbl_delay);
-        tv.setVisibility(v);
-        tv = (TextView) findViewById(R.id.val_delay);
-        tv.setVisibility(v);
-        SeekBar sb = (SeekBar) findViewById(R.id.opt_delay);
-        sb.setVisibility(v);
-        tv = (TextView) findViewById(R.id.lbl_enhance);
-        tv.setVisibility(v);
-        tv = (TextView) findViewById(R.id.val_enhance);
-        tv.setVisibility(v);
-        sb = (SeekBar) findViewById(R.id.opt_enhance);
-        sb.setVisibility(v);
-   }
-
-    private void showHideServer(boolean show) {
-        int v = show ? View.VISIBLE : View.INVISIBLE;
-        TextView tv = (TextView) findViewById(R.id.lbl_server_address);
-        tv.setVisibility(v);
-        tv = (TextView) findViewById(R.id.lbl_server_port);
-        tv.setVisibility(v);
-        EditText et = (EditText) findViewById(R.id.opt_server_address);
-        et.setVisibility(v);
-        et = (EditText) findViewById(R.id.opt_server_port);
-        et.setVisibility(v);
     }
 
     Handler runHandler = new Handler() {
@@ -230,42 +108,34 @@ public class StartActivity extends AppCompatActivity implements AdapterView.OnIt
             public void run() {
                 String err = "";
 
-                switch (getValue(Util.kMode)) {
-                    case Util.vModeDelay:
-                        break;
-                    case Util.vModeExtern:
-                        // TODO: check for wifi
-                        try {
-                            String addr = getValue(Util.kAddress);
-                            if (addr.equals("")) {
-                                throw new Error("Missing domain or address");
-                            }
-                            int port = getIntValue(Util.kPort);
-                            if (port < 0) {
-                                throw new Error("Missing port number");
-                            }
-                            String uid = getValue(Util.kUid);
-                            if (uid.equals("")) {
-                                uid = "" + System.currentTimeMillis();
-                                saveValue(Util.kUid, uid);
-                            }
-                            Socket socket = new Socket();
-                            socket.connect(new InetSocketAddress(addr, port), 2000);
-                            DataInputStream input = new DataInputStream(socket.getInputStream());
-                            PrintStream output = new PrintStream(socket.getOutputStream());
-                            output.format("VRC1.0 %s\n", uid);
-                            String result = input.readLine().trim();
-                            if (!result.equals("VRC1.0.OK")) {
-                                throw new Error("Invalid response from server: " + result);
-                            }
-                            output.format("quit\n");
-                            socket.close();
-                        } catch (Exception | Error e) {
-                            err = e.toString();
-                        }
-                        break;
-                    default:
-                        err = "Invalid mode";
+                // TODO: check for wifi
+                try {
+                    String addr = getValue(Util.kAddress);
+                    if (addr.equals("")) {
+                        throw new Error("Missing domain or address");
+                    }
+                    int port = getIntValue(Util.kPort);
+                    if (port < 0) {
+                        throw new Error("Missing port number");
+                    }
+                    String uid = getValue(Util.kUid);
+                    if (uid.equals("")) {
+                        uid = "" + System.currentTimeMillis();
+                        saveValue(Util.kUid, uid);
+                    }
+                    Socket socket = new Socket();
+                    socket.connect(new InetSocketAddress(addr, port), 2000);
+                    DataInputStream input = new DataInputStream(socket.getInputStream());
+                    PrintStream output = new PrintStream(socket.getOutputStream());
+                    output.format("VRC1.0 %s\n", uid);
+                    String result = input.readLine().trim();
+                    if (!result.equals("VRC1.0.OK")) {
+                        throw new Error("Invalid response from server: " + result);
+                    }
+                    output.format("quit\n");
+                    socket.close();
+                } catch (Exception | Error e) {
+                    err = e.toString();
                 }
 
                 Message msg = Message.obtain();

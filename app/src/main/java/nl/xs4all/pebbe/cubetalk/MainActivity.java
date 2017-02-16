@@ -19,8 +19,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     private Kubus kubus;
     private Wereld wereld;
-    private Info info;
-    private Arrows arrows;
     private int[] texturenames;
 
     protected float[] modelCube;
@@ -37,7 +35,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private float ox;
     private float oy;
     private float oz;
-    private int modus;
 
     public interface Provider {
         int forward(float[] out, float[] in);
@@ -63,33 +60,14 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         other = new float[3];
 
         MyDBHandler handler = new MyDBHandler(this);
-        switch (handler.findSetting(Util.kMode)) {
-            case Util.vModeDelay:
-                long delay = 1000;
-                String d = handler.findSetting(Util.kDelay);
-                if (!d.equals("")) {
-                    delay = 500 * (long) Integer.parseInt(d, 10);
-                }
-                float enhance = 1.0f;
-                String e = handler.findSetting(Util.kEnhance);
-                if (!e.equals("")) {
-                    enhance = 0.5f * (float) (Integer.parseInt(e, 10) - 4);
-                }
-                provider = new vertraagd(delay, enhance);
-                break;
-            case Util.vModeExtern:
-                // external server
-                String addr = handler.findSetting(Util.kAddress);
-                String p = handler.findSetting(Util.kPort);
-                int port = 0;
-                if (!p.equals("")) {
-                    port = Integer.parseInt(p, 10);
-                }
-                provider = new server(this, addr, port);
-                break;
-            default:
-                throw new Error("invalid mode");
+        // external server
+        String addr = handler.findSetting(Util.kAddress);
+        String p = handler.findSetting(Util.kPort);
+        int port = 0;
+        if (!p.equals("")) {
+            port = Integer.parseInt(p, 10);
         }
+        provider = new server(this, addr, port);
     }
 
     @Override
@@ -104,13 +82,10 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         kubus = new Kubus(this, texturenames[0]);
         wereld = new Wereld(this, texturenames[1]);
-        info = new Info(this, texturenames[2]);
-        arrows = new Arrows();
 
         ox = 0;
         oy = 0;
         oz = -1;
-        modus = -1;
     }
 
     @Override
@@ -121,12 +96,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         headTransform.getForwardVector(forward, 0);
         Matrix.translateM(modelWorld, 0, DISTANCE * forward[0], DISTANCE * forward[1], DISTANCE * forward[2]);
-
-        if (modus == -1) {
-                Matrix.setIdentityM(modelArrows, 0);
-                Matrix.setIdentityM(modelInfo, 0);
-                Matrix.translateM(modelInfo, 0, 0, 0, -3);
-        }
 
         // is dit nodig?
         float f = (float) Math.sqrt((double) (forward[0] * forward[0] + forward[1] * forward[1] + forward[2] * forward[2]));
@@ -148,8 +117,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             oz = other[2];
         }
 
-        if (modus == 0) {
-
             Matrix.translateM(modelCube, 0, DISTANCE * forward[0], DISTANCE * forward[1], DISTANCE * forward[2]);
 
             float roth = (float) Math.atan2((double) forward[0], (double) forward[2]);
@@ -162,20 +129,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             roth = (float) Math.atan2(ox, oz);
             Matrix.rotateM(modelCube, 0, -roth / (float) Math.PI * 180.0f, 0, 1, 0);
 
-        } else if (modus == 1) {
-
-            Matrix.translateM(modelCube, 0, DISTANCE * forward[0], DISTANCE * forward[1], DISTANCE * forward[2]);
-
-            float roth = (float) Math.atan2(ox, oz);
-            Matrix.rotateM(modelCube, 0, roth / (float) Math.PI * 180.0f, 0, 1, 0);
-            float rotv = (float) Math.atan2(oy, Math.sqrt(ox * ox + oz * oz));
-            Matrix.rotateM(modelCube, 0, -rotv / (float) Math.PI * 180.0f, 1, 0, 0);
-
-        } else if (modus == 2) {
-
-            Matrix.translateM(modelCube, 0, DISTANCE * ox, DISTANCE * oy, DISTANCE * oz);
-
-        }
     }
 
     @Override
@@ -193,23 +146,14 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
         GLES20.glDisable(GLES20.GL_CULL_FACE);
-        wereld.draw(modelViewProjection, modus);
+        wereld.draw(modelViewProjection);
 
-        if (modus == -1) {
-            Matrix.multiplyMM(modelView, 0, view, 0, modelInfo, 0);
-            Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-            info.draw(modelViewProjection);
-            Matrix.multiplyMM(modelView, 0, view, 0, modelArrows, 0);
-            Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-            arrows.draw(modelViewProjection);
-        } else {
-            Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
-            Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+        Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
+        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
-            GLES20.glEnable(GLES20.GL_CULL_FACE);
-            GLES20.glCullFace(GLES20.GL_BACK);
-            kubus.draw(modelViewProjection);
-        }
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        GLES20.glCullFace(GLES20.GL_BACK);
+        kubus.draw(modelViewProjection, .2f, .7f, 1);
     }
 
     @Override
@@ -254,6 +198,5 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     @Override
     public void onCardboardTrigger() {
-        modus = (modus + 1) % 3;
     }
 }

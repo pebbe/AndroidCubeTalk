@@ -130,6 +130,8 @@ func handleRequests() {
 						req.resp <- "moveto B 0 0 0 4"
 						req.resp <- "enter C"
 						req.resp <- "moveto C 0 -4 0 0"
+						req.resp <- "color A 0 1 1 0"
+						req.resp <- "color C 0 .4 .7 1"
 					}
 					x, err := strconv.ParseFloat(a[1], 64)
 					if err == nil {
