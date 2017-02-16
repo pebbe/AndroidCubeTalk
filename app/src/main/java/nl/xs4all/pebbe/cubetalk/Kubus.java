@@ -12,7 +12,7 @@ import java.nio.FloatBuffer;
 
 public class Kubus {
 
-    private final static int ARRAY_SIZE = 6 * 6 * 3;
+    private final static int ARRAY_SIZE = (6 * 6 + 9) * 3;
 
     private FloatBuffer coordsBuffer;
     private FloatBuffer colorsBuffer;
@@ -72,44 +72,56 @@ public class Kubus {
         punt(1, 1, -1, 1, 0, 1);
 
         // links 2
-        punt(-1, 1, -1, 0, 0, .85f);
-        punt(-1, -1, -1, 0, 1, .85f);
-        punt(-1, -1, 1, 1, 1, .85f);
-        punt(-1, 1, -1, 0, 0, .85f);
-        punt(-1, -1, 1, 1, 1, .85f);
-        punt(-1, 1, 1, 1, 0, .85f);
+        punt(-1, 1, -1, 0, 0, .6f);
+        punt(-1, -1, -1, 0, 1, .6f);
+        punt(-1, -1, 1, 1, 1, .6f);
+        punt(-1, 1, -1, 0, 0, .6f);
+        punt(-1, -1, 1, 1, 1, .6f);
+        punt(-1, 1, 1, 1, 0, .6f);
+
+        punt(-1.01f, -.9f, 0, .5f, .95f, .3f);
+        punt(-1.01f, 0, -.9f, .95f, .5f, .3f);
+        punt(-1.01f, -.9f, -.9f, .95f, .95f, .3f);
 
         // voor 4
-        punt(-1, 1, 1, 0, 0, .7f);
-        punt(-1, -1, 1, 0, 1, .7f);
-        punt(1, -1, 1, 1, 1, .7f);
-        punt(-1, 1, 1, 0, 0, .7f);
-        punt(1, -1, 1, 1, 1, .7f);
-        punt(1, 1, 1, 1, 0, .7f);
+        punt(-1, 1, 1, 0, 0, .8f);
+        punt(-1, -1, 1, 0, 1, .8f);
+        punt(1, -1, 1, 1, 1, .8f);
+        punt(-1, 1, 1, 0, 0, .8f);
+        punt(1, -1, 1, 1, 1, .8f);
+        punt(1, 1, 1, 1, 0, .8f);
+
+        punt(-.4f, -.5f, 1.01f, .3f, .25f, .4f);
+        punt(.4f, -.5f, 1.01f, .7f, .25f, .4f);
+        punt(0, .5f, 1.01f, .5f, .75f, .4f);
 
         // rechts 5
-        punt(1, 1, 1, 0, 0, .4f);
-        punt(1, -1, 1, 0, 1, .4f);
-        punt(1, -1, -1, 1, 1, .4f);
-        punt(1, 1, 1, 0, 0, .4f);
-        punt(1, -1, -1, 1, 1, .4f);
-        punt(1, 1, -1, 1, 0, .4f);
+        punt(1, 1, 1, 0, 0, .6f);
+        punt(1, -1, 1, 0, 1, .6f);
+        punt(1, -1, -1, 1, 1, .6f);
+        punt(1, 1, 1, 0, 0, .6f);
+        punt(1, -1, -1, 1, 1, .6f);
+        punt(1, 1, -1, 1, 0, .6f);
+
+        punt(1.01f, -.9f, 0, .5f, .95f, .3f);
+        punt(1.01f, -.9f, -.9f, .05f, .95f, .3f);
+        punt(1.01f, 0, -.9f, .05f, .5f, .3f);
 
         // achter 3
-        punt(1, 1, -1, 0, 0, .55f);
-        punt(1, -1, -1, 0, 1, .55f);
-        punt(-1, -1, -1, 1, 1, .55f);
-        punt(1, 1, -1, 0, 0, .55f);
-        punt(-1, -1, -1, 1, 1, .55f);
-        punt(-1, 1, -1, 1, 0, .55f);
+        punt(1, 1, -1, 0, 0, .4f);
+        punt(1, -1, -1, 0, 1, .4f);
+        punt(-1, -1, -1, 1, 1, .4f);
+        punt(1, 1, -1, 0, 0, .4f);
+        punt(-1, -1, -1, 1, 1, .4f);
+        punt(-1, 1, -1, 1, 0, .4f);
 
         // onder 1
-        punt(-1, -1, 1, 0, 0, .25f);
-        punt(-1, -1, -1, 0, 1, .25f);
-        punt(1, -1, -1, 1, 1, .25f);
-        punt(-1, -1, 1, 0, 0, .25f);
-        punt(1, -1, -1, 1, 1, .25f);
-        punt(1, -1, 1, 1, 0, .25f);
+        punt(-1, -1, 1, 0, 0, .2f);
+        punt(-1, -1, -1, 0, 1, .2f);
+        punt(1, -1, -1, 1, 1, .2f);
+        punt(-1, -1, 1, 0, 0, .2f);
+        punt(1, -1, -1, 1, 1, .2f);
+        punt(1, -1, 1, 1, 0, .2f);
 
 
         ByteBuffer b1 = ByteBuffer.allocateDirect(ARRAY_SIZE * 4);

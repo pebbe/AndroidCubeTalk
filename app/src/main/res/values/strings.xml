@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">VR Cube</string>
+    <string name="app_name">CubeTalk VR</string>
     <string name="run">Run</string>
     <string name="mode">Mode:</string>
     <string name="delay">Delay in seconds:</string>
