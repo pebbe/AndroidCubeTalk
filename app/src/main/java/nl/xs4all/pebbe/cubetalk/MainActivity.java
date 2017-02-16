@@ -15,8 +15,6 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 public class MainActivity extends GvrActivity implements GvrView.StereoRenderer {
 
-    private static final float DISTANCE = 7.0f;
-
     private Kubus kubus;
     private Wereld wereld;
     private int[] texturenames;
@@ -30,14 +28,13 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private float[] modelViewProjection;
     private float[] modelView;
     private float[] forward;
-    private float[] other;
+    private float selfZ = -4;
     private Provider provider;
-    private float ox;
-    private float oy;
-    private float oz;
 
     public interface Provider {
-        int forward(float[] out, float[] in);
+        int forward(float[] in);
+        float getSelf();
+        CubeData getCubeData(int i);
         String getError();
     }
 
@@ -57,7 +54,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         modelViewProjection = new float[16];
         modelView = new float[16];
         forward = new float[3];
-        other = new float[3];
 
         MyDBHandler handler = new MyDBHandler(this);
         // external server
@@ -82,20 +78,17 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         kubus = new Kubus(this, texturenames[0]);
         wereld = new Wereld(this, texturenames[1]);
-
-        ox = 0;
-        oy = 0;
-        oz = -1;
     }
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
-        Matrix.setIdentityM(modelCube, 0);
+        selfZ = provider.getSelf();
+
         Matrix.setIdentityM(modelWorld, 0);
         Matrix.setIdentityM(modelInfo, 0);
 
         headTransform.getForwardVector(forward, 0);
-        Matrix.translateM(modelWorld, 0, DISTANCE * forward[0], DISTANCE * forward[1], DISTANCE * forward[2]);
+        Matrix.translateM(modelWorld, 0, 0, 0, -selfZ);
 
         // is dit nodig?
         float f = (float) Math.sqrt((double) (forward[0] * forward[0] + forward[1] * forward[1] + forward[2] * forward[2]));
@@ -103,7 +96,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         forward[1] = forward[1] / f;
         forward[2] = forward[2] / f;
 
-        int retval = provider.forward(other, forward);
+        int retval = provider.forward(forward);
         if (retval == Util.stERROR) {
             Intent data = new Intent();
             data.putExtra(Util.sError, provider.getError());
@@ -111,24 +104,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             finish();
             return;
         }
-        if (retval == Util.stOK) {
-            ox = other[0];
-            oy = other[1];
-            oz = other[2];
-        }
-
-            Matrix.translateM(modelCube, 0, DISTANCE * forward[0], DISTANCE * forward[1], DISTANCE * forward[2]);
-
-            float roth = (float) Math.atan2((double) forward[0], (double) forward[2]);
-            Matrix.rotateM(modelCube, 0, roth / (float) Math.PI * 180.0f, 0, 1, 0);
-            float rotv = (float) Math.atan2(forward[1], Math.sqrt(forward[0] * forward[0] + forward[2] * forward[2]));
-            Matrix.rotateM(modelCube, 0, -rotv / (float) Math.PI * 180.0f, 1, 0, 0);
-
-            rotv = (float) Math.atan2(oy, Math.sqrt(ox * ox + oz * oz));
-            Matrix.rotateM(modelCube, 0, rotv / (float) Math.PI * 180.0f, 1, 0, 0);
-            roth = (float) Math.atan2(ox, oz);
-            Matrix.rotateM(modelCube, 0, -roth / (float) Math.PI * 180.0f, 0, 1, 0);
-
     }
 
     @Override
@@ -140,7 +115,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         // Build the ModelView and ModelViewProjection matrices
         // for calculating cube position and light.
-        float[] perspective = eye.getPerspective(0.1f, 100.0f);
+        float[] perspective = eye.getPerspective(0.1f, 200.0f);
 
         Matrix.multiplyMM(modelView, 0, view, 0, modelWorld, 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
@@ -148,12 +123,38 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         GLES20.glDisable(GLES20.GL_CULL_FACE);
         wereld.draw(modelViewProjection);
 
-        Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
-        Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glCullFace(GLES20.GL_BACK);
-        kubus.draw(modelViewProjection, .2f, .7f, 1);
+
+        for (int i = 0; i < 1000; i++) {
+            CubeData cube;
+            cube = provider.getCubeData(i);
+            if (!cube.valid) {
+                break;
+            }
+            if (!cube.visible) {
+                continue;
+            }
+
+            Matrix.setIdentityM(modelCube, 0);
+
+            Matrix.translateM(modelCube, 0, 0, 0, -selfZ);
+            Matrix.translateM(modelCube, 0, cube.pos[0], cube.pos[1], cube.pos[2]);
+
+            float x = cube.lookat[0];
+            float y = cube.lookat[1];
+            float z = cube.lookat[2];
+
+            float roth = (float) Math.atan2(x, z);
+            Matrix.rotateM(modelCube, 0, roth / (float) Math.PI * 180.0f, 0, 1, 0);
+            float rotv = (float) Math.atan2(y, Math.sqrt(x * x + z * z));
+            Matrix.rotateM(modelCube, 0, -rotv / (float) Math.PI * 180.0f, 1, 0, 0);
+
+            Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
+            Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+            kubus.draw(modelViewProjection, cube.color[0], cube.color[1], cube.color[2]);
+        }
+
     }
 
     @Override

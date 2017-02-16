@@ -123,9 +123,9 @@ func handleRequests() {
 					u, ok := users[req.id]
 					if !ok {
 						u = 0
-						req.resp <- "self 0 -4"
-						req.resp <- "enter B"
-						req.resp <- "moveto B 0 0 0 4"
+						req.resp <- "self 0 4"
+						req.resp <- "enter B 0"
+						req.resp <- "moveto B 0 0 0 -4"
 					}
 					z, err := strconv.ParseFloat(a[3], 64)
 					if err == nil {

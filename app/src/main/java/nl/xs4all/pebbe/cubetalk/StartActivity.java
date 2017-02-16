@@ -127,9 +127,9 @@ public class StartActivity extends AppCompatActivity {
                     socket.connect(new InetSocketAddress(addr, port), 2000);
                     DataInputStream input = new DataInputStream(socket.getInputStream());
                     PrintStream output = new PrintStream(socket.getOutputStream());
-                    output.format("VRC1.0 %s\n", uid);
+                    output.format("join %s\n", uid);
                     String result = input.readLine().trim();
-                    if (!result.equals("VRC1.0.OK")) {
+                    if (!result.equals(".")) {
                         throw new Error("Invalid response from server: " + result);
                     }
                     output.format("quit\n");

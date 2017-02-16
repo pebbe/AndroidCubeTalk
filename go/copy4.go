@@ -123,12 +123,12 @@ func handleRequests() {
 					u, ok := users[req.id]
 					if !ok {
 						u = 0
-						req.resp <- "self 0 -4"
-						req.resp <- "enter A"
+						req.resp <- "self 0 4"
+						req.resp <- "enter A 0"
 						req.resp <- "moveto A 0 4 0 0"
-						req.resp <- "enter B"
-						req.resp <- "moveto B 0 0 0 4"
-						req.resp <- "enter C"
+						req.resp <- "enter B 0"
+						req.resp <- "moveto B 0 0 0 -4"
+						req.resp <- "enter C 0"
 						req.resp <- "moveto C 0 -4 0 0"
 						req.resp <- "color A 0 1 1 0"
 						req.resp <- "color C 0 .4 .7 1"
