@@ -223,8 +223,10 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             infoChoice = 0;
             if (hasChoice) {
                 float roth = (float) (-Math.atan2(forward[0], -forward[2]) / Math.PI * 180.0) - infoAngleH;
-                if (roth < -Math.PI) {
-                    roth += Math.PI;
+                if (roth < -180) {
+                    roth += 360;
+                } else if (roth > 180) {
+                    roth -= 360;
                 }
                 if (roth < 0) {
                     infoChoice = 1;
