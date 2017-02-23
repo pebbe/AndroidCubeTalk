@@ -160,13 +160,15 @@ func handleRequests() {
 					select {
 					case <-info:
 						if choice {
-							req.resp <- fmt.Sprintf("info %d 2 abc YES NO", infonr)
-							req.resp <- "Hello there!"
+							req.resp <- fmt.Sprintf("info %d 3 abc YES NO", infonr)
+							req.resp <- "Hi there!"
+							req.resp <- ""
 							req.resp <- "Do you like cookies?"
 						} else {
-							req.resp <- fmt.Sprintf("info %d 2", infonr)
-							req.resp <- "Hello there!"
-							req.resp <- fmt.Sprintf("time: %v", time.Now())
+							req.resp <- fmt.Sprintf("info %d 3", infonr)
+							req.resp <- "Hello VR World!"
+							req.resp <- ""
+							req.resp <- time.Now().Format(time.RFC1123)
 						}
 						choice = !choice
 						infonr++
