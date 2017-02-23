@@ -34,6 +34,7 @@ var (
 	users    = make(map[string]uint64)
 	info     = make(chan bool)
 	infonr   = 0
+	choice   = false
 
 	errArgs    = errors.New("Wrong number of arguments")
 	errUnknown = errors.New("Unknown command")
@@ -128,6 +129,19 @@ func handleRequests() {
 				} else {
 					invalid(req, errArgs)
 				}
+			case "info":
+				if len(a) == 3 {
+					fmt.Printf("choice from %s for %s: %s\n", req.id, a[1], a[2])
+					req.resp <- fmt.Sprintf("info %d 1", infonr)
+					if a[2] == "YES" {
+						req.resp <- "You like cookies!"
+					} else {
+						req.resp <- "You don't like cookies :-("
+					}
+					infonr++
+				} else {
+					invalid(req, errArgs)
+				}
 			case "lookat":
 				if len(a) == 4 {
 					u, ok := users[req.id]
@@ -145,10 +159,17 @@ func handleRequests() {
 					}
 					select {
 					case <-info:
-						req.resp <- fmt.Sprintf("info %d 2", infonr)
+						if choice {
+							req.resp <- fmt.Sprintf("info %d 2 abc YES NO", infonr)
+							req.resp <- "Hello there!"
+							req.resp <- "Do you like cookies?"
+						} else {
+							req.resp <- fmt.Sprintf("info %d 2", infonr)
+							req.resp <- "Hello there!"
+							req.resp <- fmt.Sprintf("time: %v", time.Now())
+						}
+						choice = !choice
 						infonr++
-						req.resp <- "Hello there!"
-						req.resp <- fmt.Sprintf("time: %v", time.Now())
 					default:
 					}
 					x, err := strconv.ParseFloat(a[1], 64)

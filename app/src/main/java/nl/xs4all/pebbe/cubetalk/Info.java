@@ -3,6 +3,8 @@ package nl.xs4all.pebbe.cubetalk;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
@@ -21,7 +23,7 @@ public class Info {
     private final int mProgram;
     private int mPositionHandle;
     private int mMatrixHandle;
-    private int texture;
+    private int[] texture;
 
     private final String vertexShaderCode = "" +
             "uniform mat4 uMVPMatrix;" +
@@ -52,8 +54,10 @@ public class Info {
     }
 
 
-    public Info(Context context, int texturename, String[] lines) {
-        texture = texturename;
+    public Info(Context context, int texturename1, int texturename2, boolean hasChoice, String choice1, String choice2, String[] lines) {
+        texture = new int[2];
+        texture[0] = texturename1;
+        texture[1] = texturename2;
 
         vertexCount = 0;
         Point(0, 1);
@@ -82,23 +86,46 @@ public class Info {
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
         Util.checkGlError("glLinkProgram");
 
-        // Temporary create a bitmap
-        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.raw.info);
+        for (int choice = 0; choice < (hasChoice ? 2 : 1); choice++) {
 
-        // Bind texture to texturename
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        Util.checkGlError("glActiveTexture");
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        Util.checkGlError("glBindTexture");
+            Bitmap bmp = Bitmap.createBitmap(800, 600, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bmp);
+            canvas.drawARGB(128, 255, 255, 255);
 
-        // Load the bitmap into the bound texture.
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+            Paint p = new Paint();
+            p.setStyle(Paint.Style.FILL);
 
-        // We are done using the bitmap so we should recycle it.
-        bmp.recycle();
+            if (hasChoice) {
+                p.setARGB(255, 192, 192, 255);
+                canvas.drawRect(choice == 0 ? 0 : 400, 540, choice == 0 ? 400 : 800, 600, p);
+                p.setARGB(255, 0, 0, 0);
+            }
+
+            p.setTextSize(40);
+            for (int i = 0; i < lines.length; i++) {
+                canvas.drawText(lines[i], 20, 350 - 25 * lines.length + 50 * i, p);
+            }
+
+            if (hasChoice) {
+                canvas.drawText(choice1, 20, 584, p);
+                canvas.drawText(choice2, 420, 584, p);
+            }
+
+            // Bind texture to texturename
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+            Util.checkGlError("glActiveTexture");
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[choice]);
+            Util.checkGlError("glBindTexture");
+
+            // Load the bitmap into the bound texture.
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+
+            // We are done using the bitmap so we should recycle it.
+            bmp.recycle();
+        }
     }
 
-    public void draw(float[] mvpMatrix) {
+    public void draw(float[] mvpMatrix, int choice) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
         Util.checkGlError("glUseProgram");
@@ -106,7 +133,7 @@ public class Info {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         Util.checkGlError("glActiveTexture");
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[choice]);
         Util.checkGlError("glBindTexture");
 
         // Set filtering

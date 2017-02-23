@@ -39,16 +39,20 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private long selfIdx = 0;
     private long syncInfoIdx = 0;
     private long infoIdx = 0;
-    private String syncInfoID;
-    private String infoID;
-    private String syncInfoChoice1;
-    private String infoChoice1;
-    private String syncInfoChoice2;
-    private String infoChoice2;
+    private String syncInfoID = "";
+    private String infoID = "";
+    private int infoChoice = 0;
+    private String syncInfoChoice1 = "";
+    private String infoChoice1 = "";
+    private String syncInfoChoice2 = "";
+    private String infoChoice2 = "";
     private boolean syncHasInfo = false;
     private boolean syncHasChoice = false;
     private boolean hasInfo = false;
     private boolean hasChoice = false;
+    private boolean syncReplyChoice = false;
+    private String syncReplyChoiceID = "";
+    private String syncReplyChoiceText = "";
     private String[] syncInfoLines;
     private Info info;
     private boolean syncErr = false;
@@ -155,8 +159,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f);
 
-        texturenames = new int[3];
-        GLES20.glGenTextures(3, texturenames, 0);
+        texturenames = new int[4];
+        GLES20.glGenTextures(4, texturenames, 0);
 
         kubus = new Kubus(this, texturenames[0]);
         wereld = new Wereld(this, texturenames[1]);
@@ -164,6 +168,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
+
         synchronized (settingsLock) {
             selfZ = syncSelfZ;
         }
@@ -179,6 +184,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         forward[0] = forward[0] / f;
         forward[1] = forward[1] / f;
         forward[2] = forward[2] / f;
+
 
         int retval = doForward(forward);
         if (retval == Util.stERROR) {
@@ -197,9 +203,14 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             if (syncHasInfo) {
                 syncHasInfo = false;
                 hasInfo = true;
-                infoAngleH = (float) (-Math.atan2((double) forward[0], (double) -forward[2]) / Math.PI * 180.0);
+                hasChoice = syncHasChoice;
+                syncHasChoice = false;
+                infoChoice1 = syncInfoChoice1;
+                infoChoice2 = syncInfoChoice2;
+                infoID = syncInfoID;
+                infoAngleH = (float) (-Math.atan2(forward[0], -forward[2]) / Math.PI * 180.0);
                 infoAngleV = (float) (Math.atan2(forward[1], Math.sqrt(forward[0] * forward[0] + forward[2] * forward[2])) / Math.PI * 180.0);
-                info = new Info(this, texturenames[2], syncInfoLines);
+                info = new Info(this, texturenames[2], texturenames[3], hasChoice, infoChoice1, infoChoice2, syncInfoLines);
             }
         }
         if (hasInfo) {
@@ -208,6 +219,18 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             Matrix.rotateM(modelInfo, 0, infoAngleV, 1, 0, 0);
             Matrix.translateM(modelInfo, 0, 0, 0, -selfZ);
             //Matrix.rotateM(modelInfo, 0, infoAngle, 0, 1, 0);
+
+            infoChoice = 0;
+            if (hasChoice) {
+                float roth = (float) (-Math.atan2(forward[0], -forward[2]) / Math.PI * 180.0) - infoAngleH;
+                if (roth < -Math.PI) {
+                    roth += Math.PI;
+                }
+                if (roth < 0) {
+                    infoChoice = 1;
+                }
+            }
+
         }
     }
 
@@ -267,9 +290,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         }
 
         if (hasInfo) {
+            GLES20.glEnable(GLES20.GL_BLEND);
             Matrix.multiplyMM(modelView, 0, view, 0, modelInfo, 0);
             Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-            info.draw(modelViewProjection);
+            info.draw(modelViewProjection, infoChoice);
+            GLES20.glDisable(GLES20.GL_BLEND);
         }
 
     }
@@ -316,10 +341,16 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     @Override
     public void onCardboardTrigger() {
-        if (hasInfo) {
-            hasInfo = false;
-            info = null;
+        if (hasChoice) {
+            synchronized (settingsLock) {
+                syncReplyChoice = true;
+                syncReplyChoiceID = infoID;
+                syncReplyChoiceText = infoChoice == 0 ? infoChoice1 : infoChoice2;
+            }
+            hasChoice = false;
         }
+        hasInfo = false;
+        info = null;
     }
 
     private int doForward(float[] in) {
@@ -337,7 +368,22 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                     }
                     runnings[index] = true;
                 }
-                outputs[index].format(Locale.US, "lookat %f %f %f\n", xi, yi, zi);
+                boolean replyChoice = false;
+                String replyID = "";
+                String replyText = "";
+                synchronized (settingsLock) {
+                    replyChoice = syncReplyChoice;
+                    if (replyChoice) {
+                        replyID = syncReplyChoiceID;
+                        replyText = syncReplyChoiceText;
+                        syncReplyChoice = false;
+                    }
+                }
+                if (replyChoice) {
+                    outputs[index].format(Locale.US, "info %s %s\n", replyID, replyText);
+                } else {
+                    outputs[index].format(Locale.US, "lookat %f %f %f\n", xi, yi, zi);
+                }
 
                 boolean busy = true;
                 while (busy) {
