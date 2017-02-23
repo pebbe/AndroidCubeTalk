@@ -98,7 +98,14 @@ public class Info {
             if (hasChoice) {
                 p.setARGB(255, 192, 192, 255);
                 canvas.drawRect(choice == 0 ? 0 : 400, 540, choice == 0 ? 400 : 800, 600, p);
+
                 p.setARGB(255, 0, 0, 0);
+                p.setStyle(Paint.Style.STROKE);
+                p.setStrokeWidth(2);
+                canvas.drawLine(0, 540, 800, 540, p);
+                canvas.drawLine(400, 540, 400, 600, p);
+
+                p.setStyle(Paint.Style.FILL);
             }
 
             p.setTextSize(40);
