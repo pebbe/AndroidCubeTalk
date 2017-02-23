@@ -9,7 +9,6 @@ public class CubeData {
     public long idx_moveto = 0;
     public long idx_lookat = 0;
     public long idx_color = 0;
-    public boolean valid;
 
     public CubeData() {
         pos = new float[]{0, 0, 100};
