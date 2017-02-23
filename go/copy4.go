@@ -17,6 +17,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Request struct {
@@ -31,6 +32,8 @@ var (
 
 	requests = make(chan Request, 100)
 	users    = make(map[string]uint64)
+	info     = make(chan bool)
+	infonr   = 0
 
 	errArgs    = errors.New("Wrong number of arguments")
 	errUnknown = errors.New("Unknown command")
@@ -44,6 +47,13 @@ func main() {
 	defer ln.Close()
 
 	go handleRequests()
+
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			info <- true
+		}
+	}()
 
 	for {
 		conn, err := ln.Accept()
@@ -132,6 +142,14 @@ func handleRequests() {
 						req.resp <- "moveto C 0 -4 0 0"
 						req.resp <- "color A 0 1 1 0"
 						req.resp <- "color C 0 .4 .7 1"
+					}
+					select {
+					case <-info:
+						req.resp <- fmt.Sprintf("info %d 2", infonr)
+						infonr++
+						req.resp <- "Hello there!"
+						req.resp <- fmt.Sprintf("time: %v", time.Now())
+					default:
 					}
 					x, err := strconv.ParseFloat(a[1], 64)
 					if err == nil {

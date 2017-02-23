@@ -35,7 +35,22 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private String[] ids;
     private CubeData[] cubes;
     private float syncSelfZ = 4;
+    private float selfZ = -4;
     private long selfIdx = 0;
+    private long syncInfoIdx = 0;
+    private long infoIdx = 0;
+    private String syncInfoID;
+    private String infoID;
+    private String syncInfoChoice1;
+    private String infoChoice1;
+    private String syncInfoChoice2;
+    private String infoChoice2;
+    private boolean syncHasInfo = false;
+    private boolean syncHasChoice = false;
+    private boolean hasInfo = false;
+    private boolean hasChoice = false;
+    private String[] syncInfoLines;
+    private Info info;
     private boolean syncErr = false;
     private String syncErrStr = "";
     final private Object settingsLock = new Object();
@@ -52,13 +67,13 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     protected float[] modelCube;
     protected float[] modelWorld;
     protected float[] modelInfo;
-    protected float[] modelArrows;
     private float[] camera;
     private float[] view;
     private float[] modelViewProjection;
     private float[] modelView;
     private float[] forward;
-    private float selfZ = -4;
+    private float infoAngleH;
+    private float infoAngleV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +85,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         modelCube = new float[16];
         modelWorld = new float[16];
         modelInfo = new float[16];
-        modelArrows = new float[16];
         camera = new float[16];
         view = new float[16];
         modelViewProjection = new float[16];
@@ -180,6 +194,20 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         }
         synchronized (settingsLock) {
             nrOfCubes = syncNrOfCubes;
+            if (syncHasInfo) {
+                syncHasInfo = false;
+                hasInfo = true;
+                infoAngleH = (float) (-Math.atan2((double) forward[0], (double) -forward[2]) / Math.PI * 180.0);
+                infoAngleV = (float) (Math.atan2(forward[1], Math.sqrt(forward[0] * forward[0] + forward[2] * forward[2])) / Math.PI * 180.0);
+                info = new Info(this, texturenames[2], syncInfoLines);
+            }
+        }
+        if (hasInfo) {
+            Matrix.setIdentityM(modelInfo, 0);
+            Matrix.rotateM(modelInfo, 0, infoAngleH, 0, 1, 0);
+            Matrix.rotateM(modelInfo, 0, infoAngleV, 1, 0, 0);
+            Matrix.translateM(modelInfo, 0, 0, 0, -selfZ);
+            //Matrix.rotateM(modelInfo, 0, infoAngle, 0, 1, 0);
         }
     }
 
@@ -238,6 +266,12 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             kubus.draw(modelViewProjection, red, green, blue);
         }
 
+        if (hasInfo) {
+            Matrix.multiplyMM(modelView, 0, view, 0, modelInfo, 0);
+            Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+            info.draw(modelViewProjection);
+        }
+
     }
 
     @Override
@@ -282,8 +316,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     @Override
     public void onCardboardTrigger() {
+        if (hasInfo) {
+            hasInfo = false;
+            info = null;
+        }
     }
-
 
     private int doForward(float[] in) {
         final float xi = in[0];
@@ -343,6 +380,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                             e = setMoveto(parts);
                         } else if (parts[0].equals("color")) {
                             e = setColor(parts);
+                        } else if (parts[0].equals("info")) {
+                            e = setInfo(parts, index);
                         }
                     }
                     if (!e.equals("")) {
@@ -560,6 +599,50 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                         cubes[i].color[0] = r;
                         cubes[i].color[1] = g;
                         cubes[i].color[2] = b;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    // info {n5} {nr of lines}
+    // info {n5} {nr of lines} {responce ID} {choice 1} {choice 2}
+   private String setInfo(String[] parts, int index) {
+        if (parts.length == 3 || parts.length == 6) {
+            long n = 0;
+            int nr_of_lines = 0;
+            try {
+                n = Integer.parseInt(parts[1]);
+                nr_of_lines = Integer.parseInt(parts[2]);
+            } catch (Exception e) {
+                return e.toString();
+            }
+            String[] lines = new String[nr_of_lines];
+            for (int i = 0; i < nr_of_lines; i++) {
+                try {
+                    lines[i] = inputs[index].readLine();
+                } catch (Exception e) {
+                    return e.toString();
+                }
+            }
+            if (n >= syncInfoIdx) {
+                synchronized (settingsLock) {
+                    syncInfoIdx = n;
+                    syncHasInfo = true;
+                    syncInfoID = parts[2];
+                    syncInfoLines = new String[nr_of_lines];
+                    for (int i = 0; i < nr_of_lines; i++) {
+                        syncInfoLines[i] = lines[i];
+                    }
+
+                    if (parts.length == 3) {
+                        syncHasChoice = false;
+                    } else {
+                        syncHasChoice = true;
+                        syncInfoID = parts[3];
+                        syncInfoChoice1 = parts[4];
+                        syncInfoChoice2 = parts[5];
                     }
                 }
             }
