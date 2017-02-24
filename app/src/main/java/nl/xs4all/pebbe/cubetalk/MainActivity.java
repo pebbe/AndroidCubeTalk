@@ -181,7 +181,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         headTransform.getForwardVector(forward, 0);
         float[] euler = new float[3];
         headTransform.getEulerAngles(euler, 0);
-        int retval = doForward(forward, euler[2]);
+        int retval = doForward(forward, euler[2] / (float) Math.PI * 180.0f);
         if (retval == Util.stERROR) {
             Intent data = new Intent();
             String e;
@@ -276,7 +276,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 float rotv = (float) Math.atan2(y, Math.sqrt(x * x + z * z));
                 Matrix.rotateM(modelCube, 0, -rotv / (float) Math.PI * 180.0f, 1, 0, 0);
 
-                Matrix.rotateM(modelCube, 0, cubes[i].roll / (float) Math.PI * 180.0f, 0, 0, -1);
+                Matrix.rotateM(modelCube, 0, cubes[i].roll, 0, 0, -1);
 
                 Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
                 Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);

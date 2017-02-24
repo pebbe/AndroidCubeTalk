@@ -30,7 +30,7 @@ public class Wereld {
             "attribute vec2 position;" +
             "varying vec2 pos;" +
             "void main() {" +
-            "    gl_Position = uMVPMatrix * vec4(18.0 * sin(position[0]) * cos(position[1]), 18.0 * sin(position[1]), 18.0 * cos(position[0]) * cos(position[1]), 1.0);" +
+            "    gl_Position = uMVPMatrix * vec4(12.0 * sin(position[0]) * cos(position[1]), 12.0 * sin(position[1]), 12.0 * cos(position[0]) * cos(position[1]), 1.0);" +
             "    pos = position;" +
             "}";
 
