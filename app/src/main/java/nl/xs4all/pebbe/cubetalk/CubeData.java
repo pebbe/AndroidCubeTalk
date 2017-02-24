@@ -3,6 +3,7 @@ package nl.xs4all.pebbe.cubetalk;
 public class CubeData {
     public float[] pos;
     public float[] lookat;
+    public float roll = 0;
     public float[] color;
     public boolean visible = false;
     public long idx_enter_exit = 0;

@@ -176,17 +176,12 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         Matrix.setIdentityM(modelWorld, 0);
         Matrix.setIdentityM(modelInfo, 0);
 
-        headTransform.getForwardVector(forward, 0);
         Matrix.translateM(modelWorld, 0, 0, 0, -selfZ);
 
-        // is dit nodig?
-        float f = (float) Math.sqrt((double) (forward[0] * forward[0] + forward[1] * forward[1] + forward[2] * forward[2]));
-        forward[0] = forward[0] / f;
-        forward[1] = forward[1] / f;
-        forward[2] = forward[2] / f;
-
-
-        int retval = doForward(forward);
+        headTransform.getForwardVector(forward, 0);
+        float[] euler = new float[3];
+        headTransform.getEulerAngles(euler, 0);
+        int retval = doForward(forward, euler[2]);
         if (retval == Util.stERROR) {
             Intent data = new Intent();
             String e;
@@ -281,6 +276,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 float rotv = (float) Math.atan2(y, Math.sqrt(x * x + z * z));
                 Matrix.rotateM(modelCube, 0, -rotv / (float) Math.PI * 180.0f, 1, 0, 0);
 
+                Matrix.rotateM(modelCube, 0, cubes[i].roll / (float) Math.PI * 180.0f, 0, 0, -1);
+
                 Matrix.multiplyMM(modelView, 0, view, 0, modelCube, 0);
                 Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 
@@ -355,10 +352,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         info = null;
     }
 
-    private int doForward(float[] in) {
+    private int doForward(float[] in, float roll) {
         final float xi = in[0];
         final float yi = in[1];
         final float zi = in[2];
+        final float ri = roll;
         final int index = currentConnection;
         currentConnection = (currentConnection + 1) % NR_OF_CONNECTIONS;
         Runnable runnable = new Runnable() {
@@ -384,7 +382,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 if (replyChoice) {
                     outputs[index].format(Locale.US, "info %s %s\n", replyID, replyText);
                 } else {
-                    outputs[index].format(Locale.US, "lookat %f %f %f\n", xi, yi, zi);
+                    outputs[index].format(Locale.US, "lookat %f %f %f %f\n", xi, yi, zi, ri);
                 }
 
                 boolean busy = true;
@@ -580,19 +578,21 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         return "";
     }
 
-    // lookat {id} {n3} {x} {y} {z}
+    // lookat {id} {n3} {x} {y} {z} {r}
     private String setLookat(String[] parts) {
-        if (parts.length == 6) {
+        if (parts.length == 7) {
             synchronized (settingsLock) {
                 long n = 0;
                 float x;
                 float y;
                 float z;
+                float r;
                 try {
                     n = Integer.parseInt(parts[2]);
                     x = Float.parseFloat(parts[3]);
                     y = Float.parseFloat(parts[4]);
                     z = Float.parseFloat(parts[5]);
+                    r = Float.parseFloat(parts[6]);
                 } catch (Exception e) {
                     return e.toString();
                 }
@@ -610,6 +610,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                         cubes[i].lookat[0] = x;
                         cubes[i].lookat[1] = y;
                         cubes[i].lookat[2] = z;
+                        cubes[i].roll = r;
                     }
                 }
             }

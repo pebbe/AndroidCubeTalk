@@ -143,7 +143,7 @@ func handleRequests() {
 					invalid(req, errArgs)
 				}
 			case "lookat":
-				if len(a) == 4 {
+				if len(a) == 5 {
 					u, ok := users[req.id]
 					if !ok {
 						u = 0
@@ -189,9 +189,9 @@ func handleRequests() {
 								} else if math.IsInf(z, 0) {
 									invalid(req, errInf)
 								} else {
-									req.resp <- fmt.Sprintf("lookat A %d %g %s %g", u, z, a[2], -x)
-									req.resp <- fmt.Sprintf("lookat B %d %g %s %g", u, -x, a[2], -z)
-									req.resp <- fmt.Sprintf("lookat C %d %g %s %g", u, -z, a[2], x)
+									req.resp <- fmt.Sprintf("lookat A %d %g %s %g %s", u, z, a[2], -x, a[4])
+									req.resp <- fmt.Sprintf("lookat B %d %g %s %g %s", u, -x, a[2], -z, a[4])
+									req.resp <- fmt.Sprintf("lookat C %d %g %s %g %s", u, -z, a[2], x, a[4])
 									u++
 								}
 							} else {
