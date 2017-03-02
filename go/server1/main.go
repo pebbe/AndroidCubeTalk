@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"runtime"
 	"strings"
 	"sync"
 )
 
 type tRequest struct {
-	uid     string
 	req     string
 	chClose chan bool
 }
@@ -17,8 +17,10 @@ type tRequest struct {
 var (
 	port = ":8448"
 
-	chIn   = make(chan tRequest, 100)
+	chIn   = make(map[string]chan tRequest)
 	chOut  = make(map[string]chan string)
+	chGet  = make(map[string]chan chan [4]float64)
+	chSet  = make(map[string]chan [4]float64)
 	chCmd  = make(chan string, 100)
 	chLog  = make(chan string, 100)
 	chQuit = make(chan bool)
@@ -35,10 +37,13 @@ func main() {
 	}()
 
 	for user := range users {
+		chIn[user] = make(chan tRequest, 100)
 		chOut[user] = make(chan string, 100)
+		chGet[user] = make(chan chan [4]float64, 100)
+		chSet[user] = make(chan [4]float64, 100)
+		go handleUser(user)
+		go controller(user)
 	}
-
-	go controller()
 
 	go func() {
 		ln, err := net.Listen("tcp", port)
@@ -82,6 +87,7 @@ func handleConnection(conn net.Conn) {
 	}
 
 	out := chOut[id]
+	in := chIn[id]
 
 	fmt.Fprintln(conn, ".")
 
@@ -95,11 +101,10 @@ func handleConnection(conn net.Conn) {
 
 		ch := make(chan bool)
 		req := tRequest{
-			uid:     id,
 			req:     line, // no newline
 			chClose: ch,
 		}
-		chIn <- req
+		in <- req
 
 		for busy := true; busy; {
 			select {
@@ -110,6 +115,22 @@ func handleConnection(conn net.Conn) {
 			}
 		}
 		fmt.Fprintln(conn, ".")
+		runtime.Gosched()
 	}
 	w(scanner.Err())
+}
+
+func handleUser(uid string) {
+	getCh := chGet[uid]
+	setCh := chSet[uid]
+	user := users[uid]
+	for {
+		select {
+		case data := <-setCh:
+			user.lookat = tVector{data[0], data[1], data[2]}
+			user.roll = data[3]
+		case setter := <-getCh:
+			setter <- [4]float64{user.lookat.x, user.lookat.y, user.lookat.z, user.roll}
+		}
+	}
 }

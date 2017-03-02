@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"runtime"
 	"strconv"
 	"strings"
 )
 
-func controller() {
+func controller(uid string) {
+
+	inCh := chIn[uid]
 
 	for {
 		select {
@@ -17,17 +20,17 @@ func controller() {
 		case cmd := <-chCmd:
 			chLog <- "C " + cmd
 			handleCmd(cmd)
-		case req := <-chIn:
-			chLog <- "I " + req.uid + " " + req.req
-			handleIn(req)
+		case req := <-inCh:
+			chLog <- "I " + uid + " " + req.req
+			handleIn(req, uid)
 		}
+		runtime.Gosched()
 	}
 }
 
-func handleIn(req tRequest) {
+func handleIn(req tRequest, uid string) {
 	defer close(req.chClose)
 	cmd := req.req
-	uid := req.uid
 	ch := chOut[uid]
 	user := users[uid]
 	words := strings.Fields(cmd)
@@ -62,10 +65,7 @@ func handleIn(req tRequest) {
 			return
 		}
 
-		user.lookat.x = X
-		user.lookat.y = Y
-		user.lookat.z = Z
-		user.roll = roll
+		chSet[uid] <- [4]float64{X, Y, Z, roll}
 
 		if !user.init {
 			// this must be in one batch to make sure that the order is preserved
@@ -83,26 +83,27 @@ func handleIn(req tRequest) {
 			user.init = true
 		}
 
+		chReturn := make(chan [4]float64)
 		user.n3++
 		for _, cube := range user.cubes {
-			if cube.uid != uid {
 
-				l := users[cube.uid].lookat
-				f := cube.forward
+			chGet[cube.uid] <- chReturn
+			data := <-chReturn
+			l := tVector{data[0], data[1], data[2]}
+			f := cube.forward
 
-				// assumption: forward is horizontal
+			// assumption: forward is horizontal
 
-				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-				rotV := between(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod, -math.Pi/2+.001, math.Pi/2-.001)
+			rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
+			rotV := between(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod, -math.Pi/2+.001, math.Pi/2-.001)
 
-				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
-					cube.uid,
-					user.n3,
-					math.Sin(rotH)*math.Cos(rotV),
-					math.Sin(rotV),
-					math.Cos(rotH)*math.Cos(rotV),
-					users[cube.uid].roll)
-			}
+			ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
+				cube.uid,
+				user.n3,
+				math.Sin(rotH)*math.Cos(rotV),
+				math.Sin(rotV),
+				math.Cos(rotH)*math.Cos(rotV),
+				data[3])
 		}
 
 	default:
