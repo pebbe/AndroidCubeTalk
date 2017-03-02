@@ -17,7 +17,9 @@ func logger() {
 	x(err)
 	defer fp.Close()
 
-	ticker := time.Tick(10 * time.Second)
+	fmt.Fprintln(fp, time.Now().Format("T 15:04:05"))
+
+	ticker := time.Tick(1 * time.Second)
 
 	for {
 		select {

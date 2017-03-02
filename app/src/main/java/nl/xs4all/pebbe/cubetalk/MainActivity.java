@@ -79,6 +79,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private float infoAngleH;
     private float infoAngleV;
 
+    private GvrView gvrView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,7 +128,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 for (int i = 0; i < NR_OF_CONNECTIONS; i++) {
                     try {
                         sockets[i] = new Socket(addr, pnum);
-                        sockets[i].setSoTimeout(1000);
+                        sockets[i].setSoTimeout(10000);
                         inputs[i] = new DataInputStream(sockets[i].getInputStream());
                         outputs[i] = new PrintStream(sockets[i].getOutputStream());
                         outputs[i].format("join %s\n", uid);
@@ -312,7 +314,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     public void initializeGvrView() {
         setContentView(R.layout.common_ui);
 
-        GvrView gvrView = (GvrView) findViewById(R.id.gvr_view);
+        gvrView = (GvrView) findViewById(R.id.gvr_view);
         gvrView.setEGLConfigChooser(8, 8, 8, 8, 16, 8);
 
         gvrView.setRenderer(this);
@@ -424,6 +426,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                             e = setColor(parts);
                         } else if (parts[0].equals("info")) {
                             e = setInfo(parts, index);
+                        } else if (parts[0].equals("recenter")) {
+                            gvrView.recenterHeadTracker();
                         }
                     }
                     if (!e.equals("")) {
@@ -694,4 +698,5 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         }
         return "";
     }
+
 }
