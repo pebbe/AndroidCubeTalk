@@ -25,7 +25,6 @@ func controller() {
 }
 
 func handleIn(req tRequest) {
-	defer close(req.chClose)
 	cmd := req.req
 	uid := req.uid
 	ch := chOut[uid]

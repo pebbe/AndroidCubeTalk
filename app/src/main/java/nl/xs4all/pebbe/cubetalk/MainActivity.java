@@ -20,7 +20,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 
 public class MainActivity extends GvrActivity implements GvrView.StereoRenderer {
 
-    private static final int NR_OF_CONNECTIONS = 10;
+    private static final int NR_OF_CONNECTIONS = 6;
 
     private static final int MAX_CUBES = 100;
 

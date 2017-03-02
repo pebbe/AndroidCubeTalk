@@ -9,15 +9,14 @@ import (
 )
 
 type tRequest struct {
-	uid     string
-	req     string
-	chClose chan bool
+	uid string
+	req string
 }
 
 var (
 	port = ":8448"
 
-	chIn   = make(chan tRequest, 100)
+	chIn   = make(chan tRequest)
 	chOut  = make(map[string]chan string)
 	chCmd  = make(chan string, 100)
 	chLog  = make(chan string, 100)
@@ -93,19 +92,16 @@ func handleConnection(conn net.Conn) {
 			break
 		}
 
-		ch := make(chan bool)
-		req := tRequest{
-			uid:     id,
-			req:     line, // no newline
-			chClose: ch,
+		chIn <- tRequest{
+			uid: id,
+			req: line, // no newline
 		}
-		chIn <- req
 
 		for busy := true; busy; {
 			select {
 			case txt := <-out: // including newline
 				fmt.Fprint(conn, txt) // no newline
-			case <-ch:
+			default:
 				busy = false
 			}
 		}
