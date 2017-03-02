@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kr/pretty"
+	//	"github.com/kr/pretty"
 
 	"math"
 )
@@ -91,10 +91,11 @@ func init() {
 	for i, cube := range cubes {
 		user := tUser{
 			uid:    cube.uid,
+			init:   true,
 			selfZ:  math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z),
 			lookat: tVector{0, 0, -1},
-			roll:   0,
 			cubes:  make([]tCube, 0, len(cubes)-1),
+			roll:   0,
 		}
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
 		Y0 := cube.pos.y
@@ -125,5 +126,5 @@ func init() {
 		}
 		users[cube.uid] = &user
 	}
-	pretty.Println(users)
+	// pretty.Println(users)
 }

@@ -9,18 +9,6 @@ import (
 )
 
 func controller() {
-	chInA := chIn["A"]
-	chInB := chIn["B"]
-	chInC := chIn["C"]
-	chInD := chIn["D"]
-	chInE := chIn["E"]
-	chInF := chIn["F"]
-	chOutA := chOut["A"]
-	chOutB := chOut["B"]
-	chOutC := chOut["C"]
-	chOutD := chOut["D"]
-	chOutE := chOut["E"]
-	chOutF := chOut["F"]
 
 	for {
 		select {
@@ -29,29 +17,18 @@ func controller() {
 		case cmd := <-chCmd:
 			chLog <- "C " + cmd
 			handleCmd(cmd)
-		case cmd := <-chInA:
-			chLog <- "I A " + cmd
-			handleIn(cmd, "A", chOutA)
-		case cmd := <-chInB:
-			chLog <- "I B " + cmd
-			handleIn(cmd, "B", chOutB)
-		case cmd := <-chInC:
-			chLog <- "I C " + cmd
-			handleIn(cmd, "C", chOutC)
-		case cmd := <-chInD:
-			chLog <- "I D " + cmd
-			handleIn(cmd, "D", chOutD)
-		case cmd := <-chInE:
-			chLog <- "I E " + cmd
-			handleIn(cmd, "E", chOutE)
-		case cmd := <-chInF:
-			chLog <- "I F " + cmd
-			handleIn(cmd, "F", chOutF)
+		case req := <-chIn:
+			chLog <- "I " + req.uid + " " + req.req
+			handleIn(req)
 		}
 	}
 }
 
-func handleIn(cmd string, uid string, chOut chan string) {
+func handleIn(req tRequest) {
+	defer close(req.chClose)
+	cmd := req.req
+	uid := req.uid
+	ch := chOut[uid]
 	user := users[uid]
 	words := strings.Fields(cmd)
 	switch words[0] {
@@ -91,6 +68,7 @@ func handleIn(cmd string, uid string, chOut chan string) {
 		user.roll = roll
 
 		if !user.init {
+			// this must be in one batch to make sure that the order is preserved
 			var buf bytes.Buffer
 			fmt.Fprintf(&buf, "self %g\n", user.selfZ)
 			for _, cube := range user.cubes {
@@ -101,11 +79,8 @@ func handleIn(cmd string, uid string, chOut chan string) {
 				user.n4++
 				fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n2, cube.red, cube.green, cube.blue)
 			}
-			select {
-			case chOut <- buf.String():
-				user.init = true
-			default:
-			}
+			ch <- buf.String()
+			user.init = true
 		}
 
 		user.n3++
@@ -120,16 +95,13 @@ func handleIn(cmd string, uid string, chOut chan string) {
 				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
 				rotV := between(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod, -math.Pi/2+.001, math.Pi/2-.001)
 
-				select {
-				case chOut <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
+				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 					cube.uid,
 					user.n3,
 					math.Sin(rotH)*math.Cos(rotV),
 					math.Sin(rotV),
 					math.Cos(rotH)*math.Cos(rotV),
-					users[cube.uid].roll):
-				default:
-				}
+					users[cube.uid].roll)
 			}
 		}
 
@@ -151,6 +123,7 @@ func handleCmd(cmd string) {
 			select {
 			case ch <- "recenter\n":
 			default:
+				// channel is full and nobody is reading from the channel
 			}
 		} else {
 			w(fmt.Errorf("Invalid user in command from GUI: %s", cmd))

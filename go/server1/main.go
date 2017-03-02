@@ -8,10 +8,16 @@ import (
 	"sync"
 )
 
+type tRequest struct {
+	uid     string
+	req     string
+	chClose chan bool
+}
+
 var (
 	port = ":8448"
 
-	chIn   = make(map[string]chan string)
+	chIn   = make(chan tRequest, 100)
 	chOut  = make(map[string]chan string)
 	chCmd  = make(chan string, 100)
 	chLog  = make(chan string, 100)
@@ -29,7 +35,6 @@ func main() {
 	}()
 
 	for user := range users {
-		chIn[user] = make(chan string, 100)
 		chOut[user] = make(chan string, 100)
 	}
 
@@ -76,7 +81,6 @@ func handleConnection(conn net.Conn) {
 		return
 	}
 
-	in := chIn[id]
 	out := chOut[id]
 
 	fmt.Fprintln(conn, ".")
@@ -89,15 +93,20 @@ func handleConnection(conn net.Conn) {
 			break
 		}
 
-		in <- line // no newline
+		ch := make(chan bool)
+		req := tRequest{
+			uid:     id,
+			req:     line, // no newline
+			chClose: ch,
+		}
+		chIn <- req
 
-	LOOP:
-		for {
+		for busy := true; busy; {
 			select {
 			case txt := <-out: // including newline
 				fmt.Fprint(conn, txt) // no newline
-			default:
-				break LOOP
+			case <-ch:
+				busy = false
 			}
 		}
 		fmt.Fprintln(conn, ".")
