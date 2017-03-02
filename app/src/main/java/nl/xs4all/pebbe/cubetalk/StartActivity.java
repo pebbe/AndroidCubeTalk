@@ -43,6 +43,10 @@ public class StartActivity extends AppCompatActivity {
             tv.setText(s);
         }
 
+        s = getValue(Util.kUid);
+        tv = (TextView) findViewById(R.id.opt_uid);
+        tv.setText(s);
+
     }
 
     @Override
@@ -58,6 +62,9 @@ public class StartActivity extends AppCompatActivity {
         tv = (TextView) findViewById(R.id.opt_server_port);
         s = tv.getText().toString().trim();
         saveValue(Util.kPort, s);
+        tv = (TextView) findViewById(R.id.opt_uid);
+        s = tv.getText().toString().trim();
+        saveValue(Util.kUid, s);
     }
 
     private void saveValue(String key, String value) {
@@ -120,8 +127,7 @@ public class StartActivity extends AppCompatActivity {
                     }
                     String uid = getValue(Util.kUid);
                     if (uid.equals("")) {
-                        uid = "" + System.currentTimeMillis();
-                        saveValue(Util.kUid, uid);
+                        throw new Error("Missing UID");
                     }
                     Socket socket = new Socket();
                     socket.connect(new InetSocketAddress(addr, port), 2000);

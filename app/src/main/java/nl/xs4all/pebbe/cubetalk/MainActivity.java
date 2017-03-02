@@ -103,6 +103,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         if (!p.equals("")) {
             port = Integer.parseInt(p, 10);
         }
+        String id = handler.findSetting(Util.kUid);
 
         ids = new String[MAX_CUBES];
         cubes = new CubeData[MAX_CUBES];
@@ -115,12 +116,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             runnings[i] = true;
         }
 
-        String value = handler.findSetting(Util.kUid);
-        if (value.equals("")) {
-            value = "" + System.currentTimeMillis();
-            handler.addSetting(Util.kUid, value);
-        }
-        final String uid = value;
+        final String uid = id;
         final String addr = address;
         final int pnum = port;
 

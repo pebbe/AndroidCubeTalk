@@ -3,6 +3,7 @@
     <string name="run">Run</string>
     <string name="address">Domain name or IP address:</string>
     <string name="port">Port number:</string>
+    <string name="uid">UID:</string>
     <string name="ok">OK</string>
     <string name="error">Error</string>
 </resources>

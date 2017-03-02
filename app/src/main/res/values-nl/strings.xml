@@ -3,6 +3,7 @@
     <string name="run">Start</string>
     <string name="address">Domeinnaam of IP-adres:</string>
     <string name="port">Poortnummer:</string>
+    <string name="uid">UID:</string>
     <string name="ok">OK</string>
     <string name="error">Fout</string>
 </resources>

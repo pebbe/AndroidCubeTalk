@@ -7,7 +7,7 @@ public class Util {
 
     public final static String kAddress = "address";
     public final static String kPort = "port";
-    public final static String kUid = "uid";
+    public final static String kUid = "uID";
     public final static String sError = "error";
 
     public final static int stOK = 0;
