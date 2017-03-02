@@ -16,10 +16,11 @@ var (
 	chCmd  = make(chan string, 100)
 	chLog  = make(chan string, 100)
 	chQuit = make(chan bool)
-	wg     sync.WaitGroup
 )
 
 func main() {
+
+	var wg sync.WaitGroup
 
 	wg.Add(1)
 	go func() {

@@ -115,14 +115,11 @@ func handleIn(cmd string, uid string, chOut chan string) {
 				l := users[cube.uid].lookat
 				f := cube.forward
 
-				rotH0 := math.Atan2(l.x, -l.z)
-				rotH := math.Atan2(f.x, f.z) - rotH0
+				// assumption: forward is horizontal
 
-				rotV0 := math.Atan2(-l.y, math.Sqrt(l.x*l.x+l.z*l.z))
-				rotV := between(
-					math.Atan2(f.y, math.Sqrt(f.x*f.x+f.z*f.z))*cube.nod-rotV0,
-					-math.Pi/2+.001,
-					math.Pi/2-.001)
+				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
+				rotV := between(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod, -math.Pi/2+.001, math.Pi/2-.001)
+
 				select {
 				case chOut <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 					cube.uid,
