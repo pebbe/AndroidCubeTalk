@@ -85,24 +85,22 @@ func handleIn(req tRequest) {
 
 		user.n3++
 		for _, cube := range user.cubes {
-			if cube.uid != uid {
 
-				l := users[cube.uid].lookat
-				f := cube.forward
+			l := users[cube.uid].lookat
+			f := cube.forward
 
-				// assumption: forward is horizontal
+			// assumption: forward is horizontal
 
-				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-				rotV := between(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod, -math.Pi/2+.001, math.Pi/2-.001)
+			rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
+			rotV := between(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod, -math.Pi/2+.001, math.Pi/2-.001)
 
-				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
-					cube.uid,
-					user.n3,
-					math.Sin(rotH)*math.Cos(rotV),
-					math.Sin(rotV),
-					math.Cos(rotH)*math.Cos(rotV),
-					users[cube.uid].roll)
-			}
+			ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
+				cube.uid,
+				user.n3,
+				math.Sin(rotH)*math.Cos(rotV),
+				math.Sin(rotV),
+				math.Cos(rotH)*math.Cos(rotV),
+				users[cube.uid].roll)
 		}
 
 	default:
