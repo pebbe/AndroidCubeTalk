@@ -21,7 +21,8 @@ button .cB -text {recenter B} -command {go::recenter B}
 button .cC -text {recenter C} -command {go::recenter C}
 button .cD -text {recenter D} -command {go::recenter D}
 button .cE -text {recenter E} -command {go::recenter E}
-pack .cA .cB .cC .cD .cE -expand yes -fill both
+button .cF -text {recenter F} -command {go::recenter F}
+pack .cA .cB .cC .cD .cE .cF -expand yes -fill both
 frame .r
 pack .r
 label .r.l -text {global nod enhance:}

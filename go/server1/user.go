@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/kr/pretty"
+
+	"fmt"
 	"math"
 )
 
@@ -22,7 +25,7 @@ type tUser struct {
 	uid    string
 	selfZ  float64
 	lookat tVector // unit vector
-	roll   float64 // between -90 and 90
+	roll   float64 // between -180 and 180
 	cubes  []tCube
 	init   bool
 	n0     uint64
@@ -39,37 +42,44 @@ var (
 		tCube{
 			uid:   "A",
 			pos:   tVector{0, 0, 4},
-			red:   1,
+			red:   1, // white
 			green: 1,
 			blue:  1,
 		},
 		tCube{
 			uid:   "B",
 			pos:   tVector{4, 0, 0},
-			red:   1,
+			red:   1, // yellow
 			green: 1,
 			blue:  0,
 		},
 		tCube{
 			uid:   "C",
 			pos:   tVector{0, 0, -4},
-			red:   0,
+			red:   0, // green
 			green: .6,
 			blue:  0,
 		},
 		tCube{
 			uid:   "D",
 			pos:   tVector{-4, 0, 0},
-			red:   .4,
+			red:   .4, // blue
 			green: .7,
 			blue:  1,
 		},
 		tCube{
 			uid:   "E",
 			pos:   tVector{2, 3, -4},
-			red:   1,
+			red:   1, // red
 			green: .6,
 			blue:  .6,
+		},
+		tCube{
+			uid:   "F",
+			pos:   tVector{-2, -3, 4},
+			red:   .5, // grey
+			green: .5,
+			blue:  .5,
 		},
 	}
 )
@@ -84,13 +94,12 @@ func init() {
 			cubes:  make([]tCube, 0, len(cubes)-1),
 		}
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
-		rotH1 := math.Atan2(cube.pos.x, -cube.pos.z)
-		rotV0 := math.Atan2(cube.pos.y, math.Sqrt(cube.pos.x*cube.pos.x+cube.pos.z*cube.pos.z))
+		rotV0 := math.Atan2(-cube.pos.y, math.Sqrt(cube.pos.x*cube.pos.x+cube.pos.z*cube.pos.z))
 		for j, cube := range cubes {
 			if j != i {
 				rotH := math.Atan2(cube.pos.x, cube.pos.z) - rotH0
-				rotH2 := math.Atan2(cube.pos.x, -cube.pos.z) - rotH1
 				rotV := math.Atan2(cube.pos.y, math.Sqrt(cube.pos.x*cube.pos.x+cube.pos.z*cube.pos.z)) - rotV0
+				fmt.Println(cubes[i].uid, cubes[j].uid, rotH/math.Pi*180, rotV/math.Pi*180)
 				l := length(cube.pos)
 				c := tCube{
 					uid:   cube.uid,
@@ -102,10 +111,11 @@ func init() {
 						l * math.Sin(rotV),
 						l * math.Cos(rotH) * math.Cos(rotV),
 					},
+					// assumption: each cube is looking towards its own origin
 					forward: tVector{
-						math.Sin(rotH2) * math.Cos(rotV),
-						math.Sin(rotV),
-						-math.Cos(rotH2) * math.Cos(rotV),
+						-math.Sin(rotH) * math.Cos(rotV),
+						-math.Sin(rotV),
+						-math.Cos(rotH) * math.Cos(rotV),
 					},
 					nod: 1,
 				}
@@ -114,6 +124,7 @@ func init() {
 		}
 		users[cube.uid] = &user
 	}
+	pretty.Println(users)
 }
 
 func length(v tVector) float64 {

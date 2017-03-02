@@ -248,6 +248,9 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glCullFace(GLES20.GL_BACK);
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        GLES20.glDepthFunc(GLES20.GL_LEQUAL);
+
 
         int n;
 

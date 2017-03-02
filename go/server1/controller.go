@@ -14,11 +14,13 @@ func controller() {
 	chInC := chIn["C"]
 	chInD := chIn["D"]
 	chInE := chIn["E"]
+	chInF := chIn["F"]
 	chOutA := chOut["A"]
 	chOutB := chOut["B"]
 	chOutC := chOut["C"]
 	chOutD := chOut["D"]
 	chOutE := chOut["E"]
+	chOutF := chOut["F"]
 
 	for {
 		select {
@@ -42,6 +44,9 @@ func controller() {
 		case cmd := <-chInE:
 			chLog <- "I E " + cmd
 			handleIn(cmd, "E", chOutE)
+		case cmd := <-chInF:
+			chLog <- "I F " + cmd
+			handleIn(cmd, "F", chOutF)
 		}
 	}
 }
@@ -106,13 +111,16 @@ func handleIn(cmd string, uid string, chOut chan string) {
 		user.n3++
 		for _, cube := range user.cubes {
 			if cube.uid != uid {
+
 				l := users[cube.uid].lookat
 				f := cube.forward
-				rotH0 := math.Atan2(f.x, -f.z)
-				rotV0 := math.Atan2(f.y, math.Sqrt(f.x*f.x+f.z*f.z))
-				rotH := math.Atan2(l.x, l.z) - rotH0
+
+				rotH0 := math.Atan2(l.x, -l.z)
+				rotH := math.Atan2(f.x, f.z) - rotH0
+
+				rotV0 := math.Atan2(-l.y, math.Sqrt(l.x*l.x+l.z*l.z))
 				rotV := between(
-					math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod-rotV0,
+					math.Atan2(f.y, math.Sqrt(f.x*f.x+f.z*f.z))*cube.nod-rotV0,
 					-math.Pi/2+.001,
 					math.Pi/2-.001)
 				select {
