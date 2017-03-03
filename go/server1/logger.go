@@ -8,27 +8,36 @@ import (
 	"time"
 )
 
+const (
+	INTERVAL = 1000 // time stamp interval in milliseconds
+)
+
 func logger() {
+
+	start := time.Now()
 
 	filename := fmt.Sprintf("%s-log-%s.txt.gz",
 		filepath.Base(os.Args[0]),
-		time.Now().Format("2006.01.02-15.04.05"))
+		start.Format("2006.01.02-15.04.05"))
 
 	fp, err := os.Create(filename)
 	x(err)
 
 	zw := gzip.NewWriter(fp)
 
+	fmt.Fprintln(zw, "I Start:", start.Format(time.RFC1123Z))
+	fmt.Fprintf(zw, "I Command line: %#v\n", os.Args)
+
 	defer func() {
-		zw.Flush()
+		stop := time.Now()
+		fmt.Fprintln(zw, "I Stop:", stop.Format(time.RFC1123Z))
+		fmt.Fprintln(zw, "I Uptime:", time.Since(start))
 		zw.Close()
 		fp.Close()
 		chLogDone <- true
 	}()
 
-	fmt.Fprintln(zw, time.Now().Format("T 15:04:05"))
-
-	ticker := time.Tick(1 * time.Second)
+	ticker := time.Tick(INTERVAL * time.Millisecond)
 
 	for {
 		select {

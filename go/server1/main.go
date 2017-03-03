@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 type tRequest struct {
@@ -15,7 +18,7 @@ type tRequest struct {
 var (
 	port = ":8448"
 
-	chIn      = make(chan tRequest)
+	chIn      = make(chan tRequest, 100)
 	chOut     = make(map[string]chan string)
 	chCmd     = make(chan string, 100)
 	chLog     = make(chan string, 100)
@@ -28,6 +31,15 @@ func main() {
 	for user := range users {
 		chOut[user] = make(chan string, 100)
 	}
+
+	go func() {
+		chSignal := make(chan os.Signal, 1)
+		signal.Notify(chSignal, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+		sig := <-chSignal
+		chLog <- "I Signal: " + sig.String()
+		finish()
+		os.Exit(0)
+	}()
 
 	go logger()
 
@@ -43,7 +55,7 @@ func main() {
 		}
 	}()
 
-	gui()
+	gui() // does not return
 
 }
 
@@ -57,6 +69,7 @@ func handleConnection(conn net.Conn) {
 	r := conn.RemoteAddr()
 	name := r.Network() + "/" + r.String()
 
+	// log to console, not to logfile
 	fmt.Println("Open ", name)
 	defer func() {
 		fmt.Println("Close", name)
