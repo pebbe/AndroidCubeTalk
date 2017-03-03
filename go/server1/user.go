@@ -1,8 +1,9 @@
 package main
 
 import (
-	//	"github.com/kr/pretty"
+	"github.com/kr/pretty"
 
+	"fmt"
 	"math"
 )
 
@@ -125,6 +126,6 @@ func init() {
 			}
 		}
 		users[cube.uid] = &user
+		chLog <- fmt.Sprintf("User %s: %# v\n", cube.uid, pretty.Formatter(user))
 	}
-	// pretty.Println(users)
 }

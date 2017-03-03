@@ -30,13 +30,16 @@ set nodvalue 1
 entry .r.e -textvariable nodvalue
 button .r.b -text {submit} -command {go::globalnod $nodvalue}
 pack .r.l .r.e .r.b -side left
-button .q -text {exit} -command exit
+button .q -text {exit} -command {go::finish; exit}
 pack .q -side left
 `))
+
+	x(tk.RegisterCommand("go::finish", finish))
 
 	x(tk.RegisterCommand("go::recenter", func(s string) {
 		chCmd <- "recenter " + s
 	}))
+
 	x(tk.RegisterCommand("go::globalnod", func(s string) {
 		chCmd <- "globalnod " + s
 	}))

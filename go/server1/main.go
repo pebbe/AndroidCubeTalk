@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"sync"
 )
 
 type tRequest struct {
@@ -16,26 +15,21 @@ type tRequest struct {
 var (
 	port = ":8448"
 
-	chIn   = make(chan tRequest)
-	chOut  = make(map[string]chan string)
-	chCmd  = make(chan string, 100)
-	chLog  = make(chan string, 100)
-	chQuit = make(chan bool)
+	chIn      = make(chan tRequest)
+	chOut     = make(map[string]chan string)
+	chCmd     = make(chan string, 100)
+	chLog     = make(chan string, 100)
+	chLogDone = make(chan bool)
+	chQuit    = make(chan bool)
 )
 
 func main() {
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		logger()
-		wg.Done()
-	}()
-
 	for user := range users {
 		chOut[user] = make(chan string, 100)
 	}
+
+	go logger()
 
 	go controller()
 
@@ -50,9 +44,12 @@ func main() {
 	}()
 
 	gui()
-	close(chQuit)
 
-	wg.Wait() // wait for logger to flush and close file
+}
+
+func finish() {
+	close(chQuit)
+	<-chLogDone
 }
 
 func handleConnection(conn net.Conn) {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,24 +10,32 @@ import (
 
 func logger() {
 
-	filename := fmt.Sprintf("%s-log-%s.txt",
+	filename := fmt.Sprintf("%s-log-%s.txt.gz",
 		filepath.Base(os.Args[0]),
 		time.Now().Format("2006.01.02-15.04.05"))
 
 	fp, err := os.Create(filename)
 	x(err)
-	defer fp.Close()
 
-	fmt.Fprintln(fp, time.Now().Format("T 15:04:05"))
+	zw := gzip.NewWriter(fp)
+
+	defer func() {
+		zw.Flush()
+		zw.Close()
+		fp.Close()
+		chLogDone <- true
+	}()
+
+	fmt.Fprintln(zw, time.Now().Format("T 15:04:05"))
 
 	ticker := time.Tick(1 * time.Second)
 
 	for {
 		select {
 		case t := <-ticker:
-			fmt.Fprintln(fp, t.Format("T 15:04:05"))
+			fmt.Fprintln(zw, t.Format("T 15:04:05"))
 		case line := <-chLog:
-			fmt.Fprintln(fp, line)
+			fmt.Fprintln(zw, line)
 		case <-chQuit:
 			return
 		}
