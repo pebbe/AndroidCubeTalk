@@ -34,7 +34,7 @@ func logger() {
 		fmt.Fprintln(zw, "I Uptime:", time.Since(start))
 		zw.Close()
 		fp.Close()
-		chLogDone <- true
+		close(chLogDone)
 	}()
 
 	ticker := time.Tick(INTERVAL * time.Millisecond)
