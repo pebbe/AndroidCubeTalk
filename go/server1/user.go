@@ -12,25 +12,27 @@ const (
 	NR_OF_COUNTERS = 6 // see counters in API
 )
 
-type tVector struct {
+type tXYZ struct {
 	x, y, z float64
+}
+
+type tRGB struct {
+	r, g, b float64
 }
 
 // This has data on how a user sees another cube, except for actual head movement
 type tCube struct {
 	uid     string
-	pos     tVector // position
-	forward tVector // neutral forward direction, unit vector, with y=0
-	red     float64
-	green   float64
-	blue    float64
+	pos     tXYZ // position
+	forward tXYZ // neutral forward direction, unit vector, with y=0
+	color   tRGB
 	nod     float64
 }
 
 type tUser struct {
 	init   bool    // init is done?
 	selfZ  float64 // position on z-axis
-	lookat tVector // direction the user is looking at, unit vector
+	lookat tXYZ    // direction the user is looking at, unit vector
 	roll   float64 // rotation around the direction of lookat, between -180 and 180
 	cubes  []tCube // other cubes, where and how as seen by this user
 	n      [NR_OF_COUNTERS]uint64
@@ -39,64 +41,52 @@ type tUser struct {
 var (
 	users = make(map[string]*tUser)
 
-	// lay-out is built from this list
+	// layout is built from this list
 	cubes = []tCube{
 		tCube{
 			uid:   "A",
-			pos:   tVector{0, 0, DISTANCE},
-			red:   1, // white
-			green: 1,
-			blue:  1,
+			pos:   tXYZ{0, 0, DISTANCE},
+			color: tRGB{1, 1, 1}, // white
 		},
 		tCube{
 			uid:   "B",
-			pos:   tVector{DISTANCE, 0, 0},
-			red:   1, // yellow
-			green: 1,
-			blue:  0,
+			pos:   tXYZ{DISTANCE, 0, 0},
+			color: tRGB{1, 1, 0}, // yellow
 		},
 		tCube{
 			uid:   "C",
-			pos:   tVector{0, 0, -DISTANCE},
-			red:   0, // green
-			green: .6,
-			blue:  0,
+			pos:   tXYZ{0, 0, -DISTANCE},
+			color: tRGB{0, .6, 0}, // green
 		},
 		tCube{
 			uid:   "D",
-			pos:   tVector{-DISTANCE, 0, 0},
-			red:   .4, // blue
-			green: .7,
-			blue:  1,
+			pos:   tXYZ{-DISTANCE, 0, 0},
+			color: tRGB{.4, .7, 1}, // blue
 		},
 		tCube{
 			uid:   "E",
-			pos:   tVector{2, 3, -4},
-			red:   1, // red
-			green: .6,
-			blue:  .6,
+			pos:   tXYZ{2, 3, -4},
+			color: tRGB{1, .6, .6}, // red
 		},
 		tCube{
 			uid:   "F",
-			pos:   tVector{-2, -3, 4},
-			red:   .5, // grey
-			green: .5,
-			blue:  .5,
+			pos:   tXYZ{-2, -3, 4},
+			color: tRGB{.5, .5, .5}, // grey
 		},
 	}
 )
 
 func init() {
 
-	chLog <- fmt.Sprintf("I Global lay-out: %# v", pretty.Formatter(cubes))
+	chLog <- fmt.Sprintf("I Global layout: %# v", pretty.Formatter(cubes))
 
-	// create lay-out for each user from list of cubes
+	// create layout for each user from list of cubes
 	for i, cube := range cubes {
 
 		user := tUser{
 			init:   true,                                                     // done at first, but undone when user sends 'reset' command
 			selfZ:  math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
-			lookat: tVector{0, 0, -1},                                        // initially looking at y-axis
+			lookat: tXYZ{0, 0, -1},                                           // initially looking at y-axis
 			roll:   0,                                                        // initially no roll
 			cubes:  make([]tCube, 0, len(cubes)-1),
 		}
@@ -110,18 +100,16 @@ func init() {
 				l := math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z)
 				c := tCube{
 					uid:   cube.uid,
-					red:   cube.red,
-					green: cube.green,
-					blue:  cube.blue,
+					color: cube.color,
 
-					pos: tVector{
+					pos: tXYZ{
 						l * math.Sin(rotH),
 						cube.pos.y - Y0,
 						l * math.Cos(rotH),
 					},
 
 					// assumption: each cube is looking horizontally towards its own y-axis
-					forward: tVector{
+					forward: tXYZ{
 						-math.Sin(rotH),
 						0,
 						-math.Cos(rotH),
@@ -135,7 +123,7 @@ func init() {
 
 		users[cube.uid] = &user
 
-		// Send lay-out for user to logger
+		// Send layout for user to logger
 		chLog <- fmt.Sprintf("I User %s: %# v", cube.uid, pretty.Formatter(user))
 	}
 }

@@ -55,8 +55,9 @@ func main() {
 		}
 	}()
 
-	gui() // does not return
+	gui()
 
+	finish()
 }
 
 func finish() {

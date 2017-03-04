@@ -82,7 +82,7 @@ func handleReq(req tRequest) {
 				user.n[2]++
 				fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[2], cube.pos.x, cube.pos.y, cube.pos.z)
 				user.n[4]++
-				fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.red, cube.green, cube.blue)
+				fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
 			}
 			ch <- buf.String()
 			user.init = true

@@ -36,17 +36,11 @@ entry .r.e -textvariable nodvalue
 button .r.b -text {submit} -command {go::globalnod $nodvalue}
 pack .r.l .r.e .r.b -side left
 
-button .q -text {exit} -command {go::finish; exit}
+# Don't use command exit, because that will kill Go as well
+button .q -text {exit} -command {destroy .}
 pack .q -side left
 
 `))
-
-	// Shut down things before GUI exits,
-	// because the GUI terminates the program when the GUI exits.
-	x(tk.RegisterCommand("go::finish", func() {
-		chLog <- "I Exit GUI"
-		finish()
-	}))
 
 	x(tk.RegisterCommand("go::recenter", func(s string) {
 		chCmd <- "recenter " + s
@@ -56,7 +50,7 @@ pack .q -side left
 		chCmd <- "globalnod " + s
 	}))
 
-	<-tk.Done // blocks forever
+	<-tk.Done
 }
 
 func tclquote(s string) string {
