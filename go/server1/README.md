@@ -21,11 +21,11 @@ is rotated so the y-axis is directly in front of where his head is
 pointed to at that moment.
 
 Locations for other cubes are shifted around so the global layout
-matches the personal layout. Each cube gets a forward vector pointing
+matches the personal layout. Each cube gets a `forward` vector pointing
 towards the y-axis:
 
-	rotate = atan2(x, z)
-	forward = -sin(rotate), 0, -cos(rotate)
+    angle = atan2(x, z)
+	forward = -sin(angle), 0, -cos(angle)
 	
 ## How do you know if someone is looking at you? ##
 
@@ -44,14 +44,14 @@ Suppose you are `A` and the other one is the first cube.
  
 (You can see these values in the log file.)
  
-You need to rotate (horizontally and sometimes vertically as well) so
+You need to rotate (horizontally, and sometimes vertically as well) so
 the vector from number 4 is pointed in the same direction as the vector
 pointing from number 2 to number 1. Then you need to rotate the vector
 from number 3 with the same amount. Finally, you can calculate the cosine
 of the angel between the vector from 2 to 1, and the rotated vector 4. If
 this value is (nearly) 1, then the other one is looking at you.
 
-The cosine of the angel between two unit vectors v and w is:
+The cosine of the angel between two unit vectors `v` and `w` is:
 
     v(x) * w(x) + v(y) * w(y) + v(z) * w(z)
 	
