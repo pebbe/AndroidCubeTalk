@@ -24,7 +24,8 @@ the text to be displayed.
 `join` must be the first request on every connection.
 
 `reset` must be used once after the app has started. This resets
-counters {n0}...{n5} on the server.
+counters {n0}...{n5} on the server, and tells the server to send the
+initial layout of the other cubes.
 
 `enter` must be used as reply before any other replies with the same `id`.
 
@@ -56,9 +57,9 @@ Example configuration, two people:
 
 Three people:
 
-    self:     0, 0,  5
-	other1:   4, 0, -3
-	other2:  -4, 0, -3
+    self:     0,    0,  4
+	other1:   3.46, 0, -2
+	other2:  -3.46, 0, -2
 
 Four people:
 
@@ -67,6 +68,6 @@ Four people:
 	other2:   0, 0, -4
 	other3:  -4, 0,  0
 
-Each cubes extends 1 unit in each direction from its origin.
+Each cube extends 1 unit in each direction from its origin.
 
 Info panels are located 3 units from the viewer.
