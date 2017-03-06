@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"math"
+	"strings"
 )
 
 const (
@@ -22,25 +23,26 @@ type tRGB struct {
 
 // This has data on how a user sees another cube, except for actual head movement
 type tCube struct {
-	uid     string
-	pos     tXYZ // position
-	forward tXYZ // neutral forward direction, unit vector, with y=0
-	color   tRGB
-	nod     float64
+	uid         string
+	pos         tXYZ // position
+	forward     tXYZ // neutral forward direction, unit vector, with y=0
+	towards     tXYZ // unit vector from user to this cube
+	color       tRGB
+	lookingatme bool
+	nod         float64
 }
 
 type tUser struct {
-	init   bool    // init is done?
-	selfZ  float64 // position on z-axis
-	lookat tXYZ    // direction the user is looking at, unit vector
-	roll   float64 // rotation around the direction of lookat, between -180 and 180
-	cubes  []tCube // other cubes, where and how as seen by this user
+	uid    string
+	init   bool     // init is done?
+	selfZ  float64  // position on z-axis
+	lookat tXYZ     // direction the user is looking at, unit vector
+	roll   float64  // rotation around the direction of lookat, between -180 and 180
+	cubes  []*tCube // other cubes, where and how as seen by this user
 	n      [NR_OF_COUNTERS]uint64
 }
 
 var (
-	users = make(map[string]*tUser)
-
 	// layout is built from this list
 	cubes = []tCube{
 		tCube{
@@ -74,28 +76,35 @@ var (
 			color: tRGB{.5, .5, .5}, // grey
 		},
 	}
+
+	users  = make([]*tUser, len(cubes))
+	labels = make(map[string]int)
 )
 
 func init() {
 
-	chLog <- fmt.Sprintf("I Global layout: %# v", pretty.Formatter(cubes))
+	labelstrings := make([]string, 0)
 
 	// create layout for each user from list of cubes
 	for i, cube := range cubes {
 
+		labels[cube.uid] = i
+		labelstrings = append(labelstrings, fmt.Sprint(cube.uid, ":", i))
+
 		user := tUser{
+			uid:    cube.uid,
 			init:   true,                                                     // done at first, but undone when user sends 'reset' command
 			selfZ:  math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
 			lookat: tXYZ{0, 0, -1},                                           // initially looking at y-axis
 			roll:   0,                                                        // initially no roll
-			cubes:  make([]tCube, 0, len(cubes)-1),
+			cubes:  make([]*tCube, len(cubes)),
 		}
 
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
 		Y0 := cube.pos.y
 
 		for j, cube := range cubes {
-			if j != i {
+			if i != j {
 				rotH := math.Atan2(cube.pos.x, cube.pos.z) - rotH0
 				l := math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z)
 				c := tCube{
@@ -117,13 +126,24 @@ func init() {
 
 					nod: 1, // standard value for nodding: no amplification
 				}
-				user.cubes = append(user.cubes, c)
+				dx := c.pos.x
+				dy := c.pos.y
+				dz := c.pos.z - user.selfZ
+				ln := math.Sqrt(dx*dx + dy*dy + dz*dz)
+				c.towards = tXYZ{dx / ln, dy / ln, dz / ln}
+				user.cubes[j] = &c
 			}
 		}
 
-		users[cube.uid] = &user
+		users[i] = &user
 
-		// Send layout for user to logger
-		chLog <- fmt.Sprintf("I User %s: %# v", cube.uid, pretty.Formatter(user))
 	}
+
+	chLog <- fmt.Sprintf("I UIDs: map[%v]", strings.Join(labelstrings, " "))
+
+	chLog <- fmt.Sprintf("I Global layout: %# v", pretty.Formatter(cubes))
+
+	// Send layout for user to logger
+	chLog <- fmt.Sprintf("I User layout: %# v", pretty.Formatter(users))
+
 }

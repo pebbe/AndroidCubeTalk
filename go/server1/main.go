@@ -12,6 +12,7 @@ import (
 
 type tRequest struct {
 	uid string
+	idx int
 	req string
 }
 
@@ -19,7 +20,7 @@ var (
 	port = ":8448"
 
 	chIn      = make(chan tRequest, 100)
-	chOut     = make(map[string]chan string)
+	chOut     = make([]chan string, 0)
 	chCmd     = make(chan string, 100)
 	chLog     = make(chan string, 100)
 	chLogDone = make(chan bool)
@@ -28,8 +29,8 @@ var (
 
 func main() {
 
-	for user := range users {
-		chOut[user] = make(chan string, 100)
+	for range users {
+		chOut = append(chOut, make(chan string, 100))
 	}
 
 	go func() {
@@ -85,17 +86,18 @@ func handleConnection(conn net.Conn) {
 	if len(a) != 2 || a[0] != "join" {
 		return
 	}
-	id := a[1]
+	uid := a[1]
 
-	if _, ok := users[id]; !ok {
+	idx, ok := labels[uid]
+	if !ok {
 		return
 	}
 
-	out := chOut[id]
+	out := chOut[idx]
 
 	fmt.Fprintln(conn, ".")
 
-	fmt.Println("     ", name, "=", id)
+	fmt.Println("     ", name, "=", uid)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -104,7 +106,8 @@ func handleConnection(conn net.Conn) {
 		}
 
 		chIn <- tRequest{
-			uid: id,
+			uid: uid,
+			idx: idx,
 			req: line, // no newline
 		}
 

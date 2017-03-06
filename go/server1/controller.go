@@ -27,9 +27,9 @@ func controller() {
 func handleReq(req tRequest) {
 
 	cmd := req.req
-	uid := req.uid
-	ch := chOut[uid]
-	user := users[uid]
+	idx := req.idx
+	ch := chOut[idx]
+	user := users[idx]
 
 	words := strings.Fields(cmd)
 	switch words[0] {
@@ -45,7 +45,7 @@ func handleReq(req tRequest) {
 	case "lookat":
 
 		if len(words) != 5 {
-			w(fmt.Errorf("Invalid number of arguments from %q: %s", uid, cmd))
+			w(fmt.Errorf("Invalid number of arguments from %q: %s", req.uid, cmd))
 			return
 		}
 
@@ -76,49 +76,71 @@ func handleReq(req tRequest) {
 			// this must be in one batch to make sure that the order is preserved
 			var buf bytes.Buffer
 			fmt.Fprintf(&buf, "self %g\n", user.selfZ)
-			for _, cube := range user.cubes {
-				user.n[1]++
-				fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[1])
-				user.n[2]++
-				fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[2], cube.pos.x, cube.pos.y, cube.pos.z)
-				user.n[4]++
-				fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+			for i, cube := range user.cubes {
+				if i != req.idx {
+					user.n[1]++
+					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[1])
+					user.n[2]++
+					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[2], cube.pos.x, cube.pos.y, cube.pos.z)
+					user.n[4]++
+					fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+				}
 			}
 			ch <- buf.String()
 			user.init = true
 		}
 
 		user.n[3]++
-		for _, cube := range user.cubes {
+		for i, cube := range user.cubes {
 
-			l := users[cube.uid].lookat
-			f := cube.forward
+			if i != req.idx {
 
-			// assumption: forward is horizontal
+				l := users[i].lookat
+				f := cube.forward
 
-			// vertical movement (nodding) is amplified by cube.nod
-			// cube.nod can by modified for each user and each cube s/he sees individually
-			// currently, the GUI only allows setting all cubes for all users to the same value
+				// assumption: forward is horizontal
 
-			rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-			rotV := between(
-				math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod,
-				-math.Pi/2+.001,
-				math.Pi/2-.001)
+				// vertical movement (nodding) is amplified by cube.nod
+				// cube.nod can by modified for each user and each cube s/he sees individually
+				// currently, the GUI only allows setting all cubes for all users to the same value
 
-			ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
-				cube.uid,
-				user.n[3],
-				math.Sin(rotH)*math.Cos(rotV),
-				math.Sin(rotV),
-				math.Cos(rotH)*math.Cos(rotV),
-				users[cube.uid].roll)
+				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
+				rotV := between(
+					math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod,
+					-math.Pi/2+.001,
+					math.Pi/2-.001)
+
+				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
+					cube.uid,
+					user.n[3],
+					math.Sin(rotH)*math.Cos(rotV),
+					math.Sin(rotV),
+					math.Cos(rotH)*math.Cos(rotV),
+					users[i].roll)
+
+				// change color of cube to orange if it is looking at me
+				v := users[i].lookat
+				w := users[i].cubes[idx].towards
+				if v.x*w.x+v.y*w.y+v.z*w.z > .99 {
+					if !cube.lookingatme {
+						cube.lookingatme = true
+						user.n[4]++
+						ch <- fmt.Sprintf("color %s %d 1 .7 0\n", cube.uid, user.n[4])
+					}
+				} else {
+					if cube.lookingatme {
+						cube.lookingatme = false
+						user.n[4]++
+						ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+					}
+				}
+			}
 
 		}
 
 	default:
 
-		w(fmt.Errorf("Invalid command from %q: %s", uid, cmd))
+		w(fmt.Errorf("Invalid command from %q: %s", req.uid, cmd))
 
 	}
 }
@@ -141,9 +163,9 @@ func handleCmd(cmd string) {
 			return
 		}
 
-		if ch, ok := chOut[words[1]]; ok {
+		if idx, ok := labels[words[1]]; ok {
 			select {
-			case ch <- "recenter\n":
+			case chOut[idx] <- "recenter\n":
 			default:
 				// channel is full and nobody is reading from the channel
 			}

@@ -29,34 +29,11 @@ towards the y-axis:
 	
 ## How do you know if someone is looking at you? ##
 
-To know if someone is looking at you, you need two things:
+Is A looking at B?
 
- * Where is the other one located relative to me?
- * What direction is the other one looking at, relative to the direction
-   from him to me?
-   
-Suppose you are `A` and the other one is the first cube.
-
- 1. You are at `0, 0, users["A"].selfZ`
- 2. The first cube is located at `users["A"].cubes[0].pos`
- 3. The first cube is currently looking at `users[users["A"].cubes[0].uid].lookat`
- 4. The vector from 3 is relative to vector `users["A"].cubes[0].forward`
- 
-(You can see these values in the log file.)
- 
-You need to rotate (horizontally, and sometimes vertically as well) so
-the vector from number 4 is pointed in the same direction as the vector
-pointing from number 2 to number 1. Then you need to rotate the vector
-from number 3 with the same amount. Finally, you can calculate the cosine
-of the angel between the vector from 2 to 1, and the rotated vector 4. If
-this value is (nearly) 1, then the other one is looking at you.
-
-The cosine of the angel between two unit vectors `v` and `w` is:
-
-    v(x) * w(x) + v(y) * w(y) + v(z) * w(z)
+    a := labels["A"]
+	b := labels["B"]
+	v := users[a].lookat
+	w := users[a].cubes[b].towards
+	v.x * w.x + v.y * w.y + v.z * w.z > 0.99
 	
-(For non-unit vectors, you need to devide the above by the product of
-the lengths of the two vectors.)
-
-Remember, all vectors (`forward` and `lookat`) are normalised to unit
-length.
