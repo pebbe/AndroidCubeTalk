@@ -126,12 +126,14 @@ func handleReq(req tRequest) {
 						cube.lookingatme = true
 						user.n[4]++
 						ch <- fmt.Sprintf("color %s %d 1 .7 0\n", cube.uid, user.n[4])
+						chLog <- fmt.Sprintf("I Begin %s looking at %s", cube.uid, req.uid)
 					}
 				} else {
 					if cube.lookingatme {
 						cube.lookingatme = false
 						user.n[4]++
 						ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+						chLog <- fmt.Sprintf("I End %s looking at %s", cube.uid, req.uid)
 					}
 				}
 			}
