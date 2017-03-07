@@ -44,7 +44,7 @@ func handleReq(req tRequest) {
 
 	case "lookat":
 
-		if len(words) != 5 {
+		if len(words) != 5 && len(words) != 6 {
 			w(fmt.Errorf("Invalid number of arguments from %q: %s", req.uid, cmd))
 			return
 		}
@@ -72,6 +72,8 @@ func handleReq(req tRequest) {
 		user.lookat.z = Z
 		user.roll = roll
 
+		marked := len(words) == 6
+
 		if !user.init {
 			// this must be in one batch to make sure that the order is preserved
 			var buf bytes.Buffer
@@ -94,6 +96,14 @@ func handleReq(req tRequest) {
 		for i, cube := range user.cubes {
 
 			if i != req.idx {
+
+				if marked {
+					if X*cube.towards.x+Y*cube.towards.y+Z*cube.towards.z > .99 {
+						chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
+						fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
+						marked = false
+					}
+				}
 
 				l := users[i].lookat
 				f := cube.forward
@@ -138,6 +148,10 @@ func handleReq(req tRequest) {
 				}
 			}
 
+		}
+
+		if marked {
+			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
 		}
 
 	default:

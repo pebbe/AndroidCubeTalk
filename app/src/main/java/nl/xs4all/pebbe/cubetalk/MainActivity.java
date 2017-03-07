@@ -51,6 +51,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private boolean hasInfo = false;
     private boolean hasChoice = false;
     private boolean syncReplyChoice = false;
+    private boolean syncMark = false;
     private String syncReplyChoiceID = "";
     private String syncReplyChoiceText = "";
     private String[] syncInfoLines;
@@ -341,16 +342,22 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     @Override
     public void onCardboardTrigger() {
-        if (hasChoice) {
-            synchronized (settingsLock) {
-                syncReplyChoice = true;
-                syncReplyChoiceID = infoID;
-                syncReplyChoiceText = infoChoice == 0 ? infoChoice1 : infoChoice2;
+        if (hasInfo) {
+            if (hasChoice) {
+                synchronized (settingsLock) {
+                    syncReplyChoice = true;
+                    syncReplyChoiceID = infoID;
+                    syncReplyChoiceText = infoChoice == 0 ? infoChoice1 : infoChoice2;
+                }
+                hasChoice = false;
             }
-            hasChoice = false;
+            hasInfo = false;
+            info = null;
+        } else {
+            synchronized (settingsLock) {
+                syncMark = true;
+            }
         }
-        hasInfo = false;
-        info = null;
     }
 
     private int doForward(float[] in, float roll) {
@@ -372,18 +379,22 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 boolean replyChoice = false;
                 String replyID = "";
                 String replyText = "";
+                String replyMark = "";
                 synchronized (settingsLock) {
                     replyChoice = syncReplyChoice;
                     if (replyChoice) {
                         replyID = syncReplyChoiceID;
                         replyText = syncReplyChoiceText;
                         syncReplyChoice = false;
+                    } else if (syncMark) {
+                        syncMark = false;
+                        replyMark = "mark";
                     }
                 }
                 if (replyChoice) {
                     outputs[index].format(Locale.US, "info %s %s\n", replyID, replyText);
                 } else {
-                    outputs[index].format(Locale.US, "lookat %f %f %f %f\n", xi, yi, zi, ri);
+                    outputs[index].format(Locale.US, "lookat %f %f %f %f %s\n", xi, yi, zi, ri, replyMark);
                 }
 
                 boolean busy = true;
