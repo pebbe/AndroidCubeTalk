@@ -202,8 +202,10 @@ func handleCmd(cmd string) {
 			return
 		}
 		for _, user := range users {
-			for i := range user.cubes {
-				user.cubes[i].nod = f
+			for _, cube := range user.cubes {
+				if cube != nil {
+					cube.nod = f
+				}
 			}
 		}
 
