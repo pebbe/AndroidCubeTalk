@@ -115,10 +115,7 @@ func handleReq(req tRequest) {
 				// currently, the GUI only allows setting all cubes for all users to the same value
 
 				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-				rotV := between(
-					math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))*cube.nod,
-					-math.Pi/2+.001,
-					math.Pi/2-.001)
+				rotV := nodEnhance(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z)), cube.nod)
 
 				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 					cube.uid,
@@ -216,12 +213,22 @@ func handleCmd(cmd string) {
 	}
 }
 
-func between(v, min, max float64) float64 {
-	if v < min {
-		return min
+func nodEnhance(rotV, enhance float64) float64 {
+	if enhance >= -1.0 && enhance <= 1.0 {
+		return rotV * enhance
 	}
-	if v > max {
-		return max
+
+	sign := 1.0
+	if math.Signbit(enhance) {
+		sign = -1.0
+		enhance = -enhance
 	}
-	return v
+
+	var v float64
+	if rotV < 0 {
+		v = -0.5 * math.Pi * (1.0 - math.Pow(1.0+rotV*2.0/math.Pi, enhance))
+	} else {
+		v = 0.5 * math.Pi * (1.0 - math.Pow(1.0-rotV*2.0/math.Pi, enhance))
+	}
+	return sign * v
 }
