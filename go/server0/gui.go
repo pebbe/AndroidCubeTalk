@@ -20,6 +20,18 @@ func gui() {
 
 wm title . "` + tclquote(filepath.Base(os.Args[0])) + `"
 
+frame .sizes
+pack .sizes
+label .sizes.l -text {size of cubes, width / height / depth}
+set cubew 1
+set cubeh 1
+set cubed 1
+entry .sizes.w -textvariable cubew
+entry .sizes.h -textvariable cubeh
+entry .sizes.d -textvariable cubed
+button .sizes.b -text {submit} -command {go::cubesize $cubew $cubeh $cubed}
+pack .sizes.l .sizes.w .sizes.h .sizes.d .sizes.b -side left
+
 button .cA -text {recenter A} -command {go::recenter A}
 button .cB -text {recenter B} -command {go::recenter B}
 button .cC -text {recenter C} -command {go::recenter C}
@@ -41,6 +53,10 @@ button .q -text {exit} -command {destroy .}
 pack .q -side left
 
 `))
+
+	x(tk.RegisterCommand("go::cubesize", func(w, h, d string) {
+		chCmd <- "cubesize " + w + " " + h + " " + d
+	}))
 
 	x(tk.RegisterCommand("go::recenter", func(s string) {
 		chCmd <- "recenter " + s

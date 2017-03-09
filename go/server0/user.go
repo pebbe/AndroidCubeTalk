@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	NR_OF_COUNTERS = 6 // see counters in API
+	NR_OF_COUNTERS = 7 // see counters in API
 )
 
 type tXYZ struct {

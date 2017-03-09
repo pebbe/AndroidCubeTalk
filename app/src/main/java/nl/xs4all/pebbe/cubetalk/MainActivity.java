@@ -38,7 +38,6 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private float selfZ = -4;
     private long selfIdx = 0;
     private long syncInfoIdx = 0;
-    private long infoIdx = 0;
     private String syncInfoID = "";
     private String infoID = "";
     private int infoChoice = 0;
@@ -56,6 +55,10 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private String syncReplyChoiceText = "";
     private String[] syncInfoLines;
     private Info info;
+    private long syncCubeSizeIdx = 0;
+    private boolean syncSetCubeSize = false;
+    private float[] syncCubeSize;
+    private float[] cubeSize;
     private boolean syncErr = false;
     private String syncErrStr = "";
     final private Object settingsLock = new Object();
@@ -97,6 +100,12 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         modelViewProjection = new float[16];
         modelView = new float[16];
         forward = new float[3];
+
+        syncCubeSize = new float[3];
+        cubeSize = new float[3];
+        cubeSize[0] = 1;
+        cubeSize[1] = 1;
+        cubeSize[2] = 1;
 
         MyDBHandler handler = new MyDBHandler(this);
         // external server
@@ -170,6 +179,12 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         synchronized (settingsLock) {
             selfZ = syncSelfZ;
+            if (syncSetCubeSize) {
+                syncSetCubeSize = false;
+                cubeSize[0] = syncCubeSize[0];
+                cubeSize[1] = syncCubeSize[1];
+                cubeSize[2] = syncCubeSize[2];
+            }
         }
 
         Matrix.setIdentityM(modelWorld, 0);
@@ -287,7 +302,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 green = cubes[i].color[1];
                 blue = cubes[i].color[2];
             }
-            kubus.draw(modelViewProjection, red, green, blue);
+            kubus.draw(modelViewProjection, red, green, blue, cubeSize);
         }
 
         if (hasInfo) {
@@ -440,6 +455,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                             e = setColor(parts);
                         } else if (parts[0].equals("info")) {
                             e = setInfo(parts, index);
+                        } else if (parts[0].equals("cubesize")) {
+                            e = setCubesize(parts, index);
                         } else if (parts[0].equals("recenter")) {
                             gvrView.recenterHeadTracker();
                         }
@@ -671,7 +688,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     // info {n5} {nr of lines}
     // info {n5} {nr of lines} {responce ID} {choice 1} {choice 2}
-   private String setInfo(String[] parts, int index) {
+    private String setInfo(String[] parts, int index) {
         if (parts.length == 3 || parts.length == 6) {
             long n = 0;
             int nr_of_lines = 0;
@@ -713,4 +730,31 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         return "";
     }
 
+    // cubesize {n6} {w} {h} {d}
+    private String setCubesize(String[] parts, int index) {
+        if (parts.length == 5) {
+            long n = 0;
+            float w = 1;
+            float h = 1;
+            float d = 1;
+            try {
+                n = Integer.parseInt(parts[1]);
+                w = Float.parseFloat(parts[2]);
+                h = Float.parseFloat(parts[3]);
+                d = Float.parseFloat(parts[4]);
+            } catch (Exception e) {
+                return e.toString();
+            }
+            synchronized (settingsLock) {
+                if (n >= syncCubeSizeIdx) {
+                    syncCubeSizeIdx = n;
+                    syncCubeSize[0] = w;
+                    syncCubeSize[1] = h;
+                    syncCubeSize[2] = d;
+                    syncSetCubeSize = true;
+                }
+            }
+        }
+        return "";
+    }
 }

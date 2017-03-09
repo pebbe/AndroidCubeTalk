@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+var (
+	setsize  = make([]bool, len(cubes))
+	cubesize = [3]float64{1, 1, 1}
+)
+
 func controller() {
 	for {
 		select {
@@ -39,6 +44,8 @@ func handleReq(req tRequest) {
 		for i := 0; i < NR_OF_COUNTERS; i++ {
 			user.n[i] = 0
 		}
+
+		setsize[idx] = true
 
 		user.init = false
 
@@ -147,6 +154,11 @@ func handleReq(req tRequest) {
 
 		}
 
+		if setsize[idx] {
+			setsize[idx] = false
+			ch <- fmt.Sprintf("cubesize %d %g %g %g\n", user.n[6], cubesize[0], cubesize[1], cubesize[2])
+		}
+
 		if marked {
 			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
 		}
@@ -161,10 +173,29 @@ func handleReq(req tRequest) {
 // handleCmd is not run concurrently, so it must be fast
 func handleCmd(cmd string) {
 
+	number_args := "Invalid number of arguments from GUI: %s"
+
 	fmt.Println("Command:", cmd)
 
 	words := strings.Fields(cmd)
 	switch words[0] {
+
+	case "cubesize":
+		if len(words) != 4 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+		for i := 0; i < 3; i++ {
+			var err error
+			cubesize[i], err = strconv.ParseFloat(words[i+1], 64)
+			if w(err) != nil {
+				cubesize[i] = 1
+			}
+		}
+		for i := range cubes {
+			setsize[i] = true
+			users[i].n[6]++
+		}
 
 	case "recenter":
 
@@ -172,7 +203,7 @@ func handleCmd(cmd string) {
 		// the direction the head is currently pointing.
 
 		if len(words) != 2 {
-			w(fmt.Errorf("Invalid number of arguments from GUI: %s", cmd))
+			w(fmt.Errorf(number_args, cmd))
 			return
 		}
 
@@ -191,7 +222,7 @@ func handleCmd(cmd string) {
 		// Set amplification of nodding for all users, for all cubes they see
 
 		if len(words) != 2 {
-			w(fmt.Errorf("Invalid number of arguments from GUI: %s", cmd))
+			w(fmt.Errorf(number_args, cmd))
 			return
 		}
 		f, err := strconv.ParseFloat(words[1], 64)

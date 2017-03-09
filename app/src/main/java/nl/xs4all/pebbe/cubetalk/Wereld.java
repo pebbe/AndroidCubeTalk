@@ -22,7 +22,6 @@ public class Wereld {
     private final int mProgram;
     private int mPositionHandle;
     private int mMatrixHandle;
-    private int mModusHandle;
     private int texture;
 
     private final String vertexShaderCode = "" +
@@ -155,6 +154,7 @@ public class Wereld {
         Util.checkGlError("glGetUniformLocation uMVPMatrix");
         GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, mvpMatrix, 0);
         Util.checkGlError("glUniformMatrix4fv uMVPMatrix");
+
 
         // Get handle to textures locations
         int mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "texture");

@@ -9,7 +9,7 @@
 `join` {id}          | `.`
 `quit`               | nothing, the connection is terminated
 `reset`              | `.`
-`lookat` {x} {y} {z} {roll} [mark] <BR> `info` {infoID} {choice} | `self` {n0} {z} <BR> `recenter` <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} {roll} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `info` {n5} {nr of lines} <BR> {lines} <BR> `info` {n5} {nr of lines} {infoID} {choice1} {choice2} <BR> {lines} <BR> `.`
+`lookat` {x} {y} {z} {roll} [mark] <BR> `info` {infoID} {choice} | `self` {n0} {z} <BR> `recenter` <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} {roll} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `info` {n5} {nr of lines} <BR> {lines} <BR> `info` {n5} {nr of lines} {infoID} {choice1} {choice2} <BR> {lines} <BR> `cubesize {n6} {width} {height} {depth} <BR> `.`
 
 All requests are a single line. All responses to `lookat` and `info` can
 be multiple lines. The last line is a single dot, except for the `quit`
@@ -24,7 +24,7 @@ the text to be displayed.
 `join` must be the first request on every connection.
 
 `reset` must be used once after the app has started. This resets
-counters {n0}...{n5} on the server, and tells the server to send the
+counters {n0}...{n6} on the server, and tells the server to send the
 initial layout of the other cubes.
 
 `enter` must be used as reply before any other replies with the same `id`.
@@ -34,7 +34,7 @@ unhidden with `enter`.
 
 All parameters are a single word, except for {lines}.
 
-{n0}...{n5} are separate counters. The client should ignore any reply
+{n0}...{n6} are separate counters. The client should ignore any reply
 command that has a counter value lower than already seen for that
 particular counter. This is in case replies don't get processed in the
 order they were sent.
@@ -58,16 +58,16 @@ Example configuration, two people:
 Three people:
 
     self:     0,    0,  4
-	other1:   3.46, 0, -2
-	other2:  -3.46, 0, -2
+    other1:   3.46, 0, -2
+    other2:  -3.46, 0, -2
 
 Four people:
 
     self:     0, 0,  4
-	other1:   4, 0,  0
-	other2:   0, 0, -4
-	other3:  -4, 0,  0
+    other1:   4, 0,  0
+    other2:   0, 0, -4
+    other3:  -4, 0,  0
 
-Each cube extends 1 unit in each direction from its origin.
+Each cube extends 1 unit in each direction from its origin. This can be changed with the `cubesize` command.
 
 Info panels are located 3 units from the viewer.

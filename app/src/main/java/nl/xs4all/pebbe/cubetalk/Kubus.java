@@ -19,17 +19,19 @@ public class Kubus {
     private final int mProgram;
     private int mPositionHandle;
     private int mColorHandle;
+    private int mCubeSizeHandle;
     private int texture;
 
     private final String vertexShaderCode = "" +
             "uniform mat4 uMVPMatrix;" +
+            "uniform vec3 uCubeSize;" +
             "attribute vec3 position;" +
             "attribute vec3 color;" +
             "uniform vec3 rgb;" +
             "varying vec3 col;" +
             "varying vec3 cl;" +
             "void main() {" +
-            "    gl_Position = uMVPMatrix * vec4(position, 1);" +
+            "    gl_Position = uMVPMatrix * vec4(uCubeSize*position, 1);" +
             "    col = color;" +
             "    cl = rgb;" +
             "}";
@@ -171,7 +173,7 @@ public class Kubus {
         bmp.recycle();
     }
 
-    public void draw(float[] mvpMatrix, float red, float green, float blue) {
+    public void draw(float[] mvpMatrix, float red, float green, float blue, float[] cubesize) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
         Util.checkGlError("glUseProgram");
@@ -220,6 +222,11 @@ public class Kubus {
         Util.checkGlError("glGetUniformLocation rgb");
         GLES20.glUniform3f(mRgbHandle, red, green, blue);
         Util.checkGlError("glUniformMatrix4fv rgb");
+
+        mCubeSizeHandle = GLES20.glGetUniformLocation(mProgram, "uCubeSize");
+        Util.checkGlError("glGetUniformLocation uCubeSize");
+        GLES20.glUniform3f(mCubeSizeHandle, cubesize[0], cubesize[1], cubesize[2]);
+        Util.checkGlError("glUniform3f uCubeSize");
 
         // Get handle to textures locations
         int mSamplerLoc = GLES20.glGetUniformLocation (mProgram, "texture" );
