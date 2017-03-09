@@ -28,9 +28,14 @@ var (
 	chQuit    = make(chan bool)
 
 	opt_d = flag.Float64("d", 4, "Unit distance to actual distance")
+	opt_t = flag.Float64("t", .99, "Tolerance for looking at cube: cosine of angle")
 )
 
 func main() {
+
+	if len(os.Args) == 1 {
+		fmt.Printf("For usage, run: %s -h\n", os.Args[0])
+	}
 
 	flag.Parse()
 

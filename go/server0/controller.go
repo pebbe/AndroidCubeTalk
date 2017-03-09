@@ -98,7 +98,7 @@ func handleReq(req tRequest) {
 			if i != req.idx {
 
 				if marked {
-					if X*cube.towards.x+Y*cube.towards.y+Z*cube.towards.z > .99 {
+					if X*cube.towards.x+Y*cube.towards.y+Z*cube.towards.z > *opt_t {
 						chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
 						fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
 						marked = false
@@ -128,7 +128,7 @@ func handleReq(req tRequest) {
 				// change color of cube to orange if it is looking at me
 				v := users[i].lookat
 				w := users[i].cubes[idx].towards
-				if v.x*w.x+v.y*w.y+v.z*w.z > .99 {
+				if v.x*w.x+v.y*w.y+v.z*w.z > *opt_t {
 					if !cube.lookingatme {
 						cube.lookingatme = true
 						user.n[4]++
