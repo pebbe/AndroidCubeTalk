@@ -11,9 +11,22 @@ import (
 var (
 	setsize  = make([]bool, len(cubes))
 	cubesize = [3]float64{1, 1, 1}
+
+	setface = make([][]int, len(cubes))
+	face    = make([]int, len(cubes))
 )
 
 func controller() {
+	for i, cube := range cubes {
+		setface[i] = make([]int, 0, len(cubes)-1)
+		face[i] = cube.face
+		for j := range cubes {
+			if i != j {
+				setface[i] = append(setface[i], j)
+			}
+		}
+	}
+
 	for {
 		select {
 		case <-chQuit:
@@ -46,6 +59,13 @@ func handleReq(req tRequest) {
 		}
 
 		setsize[idx] = true
+
+		setface[idx] = setface[idx][0:0]
+		for i := range cubes {
+			if i != idx {
+				setface[idx] = append(setface[idx], i)
+			}
+		}
 
 		user.init = false
 
@@ -95,8 +115,6 @@ func handleReq(req tRequest) {
 					fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
 					user.n[7]++
 					fmt.Fprintf(&buf, "head %s %d %d\n", cube.uid, user.n[7], cube.head)
-					user.n[8]++
-					fmt.Fprintf(&buf, "face %s %d %d\n", cube.uid, user.n[8], cube.face)
 				}
 			}
 			ch <- buf.String()
@@ -163,6 +181,12 @@ func handleReq(req tRequest) {
 			ch <- fmt.Sprintf("cubesize %d %g %g %g\n", user.n[6], cubesize[0], cubesize[1], cubesize[2])
 		}
 
+		for _, i := range setface[idx] {
+			user.n[8]++
+			ch <- fmt.Sprintf("face %s %d %d\n", cubes[i].uid, user.n[8], face[i])
+		}
+		setface[idx] = setface[idx][0:0]
+
 		if marked {
 			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
 		}
@@ -184,7 +208,33 @@ func handleCmd(cmd string) {
 	words := strings.Fields(cmd)
 	switch words[0] {
 
+	case "face":
+
+		if len(words) != 3 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		idx, ok := labels[words[1]]
+		if !ok {
+			w(fmt.Errorf("Illegal label in command: %s", cmd))
+			return
+		}
+
+		f, err := strconv.ParseInt(words[2], 10, 16)
+		if w(err) != nil {
+			return
+		}
+
+		face[idx] = int(f)
+		for i := range cubes {
+			if i != idx {
+				setface[i] = append(setface[i], idx)
+			}
+		}
+
 	case "cubesize":
+
 		if len(words) != 4 {
 			w(fmt.Errorf(number_args, cmd))
 			return

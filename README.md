@@ -24,7 +24,7 @@ the text to be displayed.
 `join` must be the first request on every connection.
 
 `reset` must be used once after the app has started. This resets
-counters {n0}...{n6} on the server, and tells the server to send the
+counters {n0}...{n8} on the server, and tells the server to send the
 initial layout of the other cubes.
 
 `enter` must be used as reply before any other replies with the same `id`.
@@ -34,7 +34,7 @@ unhidden with `enter`.
 
 All parameters are a single word, except for {lines}.
 
-{n0}...{n6} are separate counters. The client should ignore any reply
+{n0}...{n8} are separate counters. The client should ignore any reply
 command that has a counter value lower than already seen for that
 particular counter. This is in case replies don't get processed in the
 order they were sent.
