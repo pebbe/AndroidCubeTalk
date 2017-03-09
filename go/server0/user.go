@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	DISTANCE       = 4
 	NR_OF_COUNTERS = 6 // see counters in API
 )
 
@@ -47,32 +46,32 @@ var (
 	cubes = []tCube{
 		tCube{
 			uid:   "A",
-			pos:   tXYZ{0, 0, DISTANCE},
+			pos:   tXYZ{0, 0, 1},
 			color: tRGB{1, 1, 1}, // white
 		},
 		tCube{
 			uid:   "B",
-			pos:   tXYZ{DISTANCE, 0, 0},
+			pos:   tXYZ{1, 0, 0},
 			color: tRGB{1, 1, 0}, // yellow
 		},
 		tCube{
 			uid:   "C",
-			pos:   tXYZ{0, 0, -DISTANCE},
+			pos:   tXYZ{0, 0, -1},
 			color: tRGB{0, .6, 0}, // green
 		},
 		tCube{
 			uid:   "D",
-			pos:   tXYZ{-DISTANCE, 0, 0},
+			pos:   tXYZ{-1, 0, 0},
 			color: tRGB{.4, .7, 1}, // blue
 		},
 		tCube{
 			uid:   "E",
-			pos:   tXYZ{2, 3, -4},
+			pos:   tXYZ{.5, .75, -1},
 			color: tRGB{1, .6, .6}, // red
 		},
 		tCube{
 			uid:   "F",
-			pos:   tXYZ{-2, -3, 4},
+			pos:   tXYZ{-.5, -.75, 1},
 			color: tRGB{.5, .5, .5}, // grey
 		},
 	}
@@ -81,7 +80,13 @@ var (
 	labels = make(map[string]int)
 )
 
-func init() {
+func makeUsers() {
+
+	for i := range cubes {
+		cubes[i].pos.x *= *opt_d
+		cubes[i].pos.y *= *opt_d
+		cubes[i].pos.z *= *opt_d
+	}
 
 	labelstrings := make([]string, 0)
 

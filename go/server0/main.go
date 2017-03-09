@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -25,9 +26,15 @@ var (
 	chLog     = make(chan string, 100)
 	chLogDone = make(chan bool)
 	chQuit    = make(chan bool)
+
+	opt_d = flag.Float64("d", 4, "Unit distance to actual distance")
 )
 
 func main() {
+
+	flag.Parse()
+
+	makeUsers()
 
 	for range users {
 		chOut = append(chOut, make(chan string, 100))
