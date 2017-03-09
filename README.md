@@ -9,7 +9,7 @@
 `join` {id}          | `.`
 `quit`               | nothing, the connection is terminated
 `reset`              | `.`
-`lookat` {x} {y} {z} {roll} [mark] <BR> `info` {infoID} {choice} | `self` {n0} {z} <BR> `recenter` <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} {roll} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `info` {n5} {nr of lines} <BR> {lines} <BR> `info` {n5} {nr of lines} {infoID} {choice1} {choice2} <BR> {lines} <BR> `cubesize {n6} {width} {height} {depth} <BR> `.`
+`lookat` {x} {y} {z} {roll} [mark] <BR> `info` {infoID} {choice} | `self` {n0} {z} <BR> `recenter` <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} {roll} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `info` {n5} {nr of lines} <BR> {lines} <BR> `info` {n5} {nr of lines} {infoID} {choice1} {choice2} <BR> {lines} <BR> `cubesize` {n6} {width} {height} {depth} <BR> `head` {id} {n7} {number} <BR> `face` {id} {n8} {number} <BR> `.`
 
 All requests are a single line. All responses to `lookat` and `info` can
 be multiple lines. The last line is a single dot, except for the `quit`

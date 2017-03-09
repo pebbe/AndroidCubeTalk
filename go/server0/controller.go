@@ -93,6 +93,10 @@ func handleReq(req tRequest) {
 					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[2], cube.pos.x, cube.pos.y, cube.pos.z)
 					user.n[4]++
 					fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+					user.n[7]++
+					fmt.Fprintf(&buf, "head %s %d %d\n", cube.uid, user.n[7], cube.head)
+					user.n[8]++
+					fmt.Fprintf(&buf, "face %s %d %d\n", cube.uid, user.n[8], cube.face)
 				}
 			}
 			ch <- buf.String()

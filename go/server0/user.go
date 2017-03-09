@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	NR_OF_COUNTERS = 7 // see counters in API
+	NR_OF_COUNTERS = 9 // see counters in API
 )
 
 type tXYZ struct {
@@ -27,6 +27,8 @@ type tCube struct {
 	forward     tXYZ // neutral forward direction, unit vector, with y=0
 	towards     tXYZ // unit vector from user to this cube
 	color       tRGB
+	head        int // texture number
+	face        int // texture number
 	lookingatme bool
 	nod         float64
 }
@@ -48,31 +50,43 @@ var (
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
 			color: tRGB{1, 1, 1}, // white
+			head:  0,
+			face:  0,
 		},
 		tCube{
 			uid:   "B",
 			pos:   tXYZ{1, 0, 0},
 			color: tRGB{1, 1, 0}, // yellow
+			head:  1,
+			face:  1,
 		},
 		tCube{
 			uid:   "C",
 			pos:   tXYZ{0, 0, -1},
 			color: tRGB{0, .6, 0}, // green
+			head:  2,
+			face:  0,
 		},
 		tCube{
 			uid:   "D",
 			pos:   tXYZ{-1, 0, 0},
 			color: tRGB{.4, .7, 1}, // blue
+			head:  0,
+			face:  1,
 		},
 		tCube{
 			uid:   "E",
 			pos:   tXYZ{.5, .75, -1},
 			color: tRGB{1, .6, .6}, // red
+			head:  1,
+			face:  0,
 		},
 		tCube{
 			uid:   "F",
 			pos:   tXYZ{-.5, -.75, 1},
 			color: tRGB{.5, .5, .5}, // grey
+			head:  2,
+			face:  1,
 		},
 	}
 
@@ -115,6 +129,8 @@ func makeUsers() {
 				c := tCube{
 					uid:   cube.uid,
 					color: cube.color,
+					head:  cube.head,
+					face:  cube.face,
 
 					pos: tXYZ{
 						l * math.Sin(rotH),

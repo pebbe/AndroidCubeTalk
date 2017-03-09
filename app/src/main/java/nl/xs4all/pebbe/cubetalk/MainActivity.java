@@ -1,7 +1,10 @@
 package nl.xs4all.pebbe.cubetalk;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.os.Bundle;
 
@@ -167,11 +170,18 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f);
 
-        texturenames = new int[4];
-        GLES20.glGenTextures(4, texturenames, 0);
+        texturenames = new int[Util.NR_OF_TEXTURES];
+        GLES20.glGenTextures(Util.NR_OF_TEXTURES, texturenames, 0);
 
-        kubus = new Kubus(this, texturenames[0]);
-        wereld = new Wereld(this, texturenames[1]);
+        setBitMap(R.raw.head5a, Util.TEXTURE_HEAD0);
+        setBitMap(R.raw.head5b, Util.TEXTURE_HEAD1);
+        setBitMap(R.raw.head5c, Util.TEXTURE_HEAD2);
+        setBitMap(R.raw.face1a, Util.TEXTURE_FACE0);
+        setBitMap(R.raw.face1b, Util.TEXTURE_FACE1);
+        setBitMap(R.raw.face1c, Util.TEXTURE_FACE2);
+
+        kubus = new Kubus();
+        wereld = new Wereld(this, texturenames[Util.TEXTURE_WORLD]);
     }
 
     @Override
@@ -219,7 +229,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 infoID = syncInfoID;
                 infoAngleH = (float) (-Math.atan2(forward[0], -forward[2]) / Math.PI * 180.0);
                 infoAngleV = (float) (Math.atan2(forward[1], Math.sqrt(forward[0] * forward[0] + forward[2] * forward[2])) / Math.PI * 180.0);
-                info = new Info(this, texturenames[2], texturenames[3], hasChoice, infoChoice1, infoChoice2, syncInfoLines);
+                info = new Info(this, texturenames[Util.TEXTURE_INFO0], texturenames[Util.TEXTURE_INFO1], hasChoice, infoChoice1, infoChoice2, syncInfoLines);
             }
         }
         if (hasInfo) {
@@ -271,9 +281,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         int n;
 
         for (int i = 0; i < nrOfCubes; i++) {
-            float red = 1;
-            float green = 1;
-            float blue = 1;
+            float red;
+            float green;
+            float blue;
+            int texturehead;
+            int textureface;
             synchronized (settingsLock) {
                 if (!cubes[i].visible) {
                     continue;
@@ -301,8 +313,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 red = cubes[i].color[0];
                 green = cubes[i].color[1];
                 blue = cubes[i].color[2];
+
+                texturehead = texturenames[cubes[i].texturehead];
+                textureface = texturenames[cubes[i].textureface];
             }
-            kubus.draw(modelViewProjection, red, green, blue, cubeSize);
+            kubus.draw(modelViewProjection, red, green, blue, cubeSize, texturehead, textureface);
         }
 
         if (hasInfo) {
@@ -453,6 +468,10 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                             e = setMoveto(parts);
                         } else if (parts[0].equals("color")) {
                             e = setColor(parts);
+                        } else if (parts[0].equals("head")) {
+                            e = setHead(parts);
+                        } else if (parts[0].equals("face")) {
+                            e = setFace(parts);
                         } else if (parts[0].equals("info")) {
                             e = setInfo(parts, index);
                         } else if (parts[0].equals("cubesize")) {
@@ -532,7 +551,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                     }
                 } else {
                     if (syncNrOfCubes < MAX_CUBES) {
-                        cubes[syncNrOfCubes] = new CubeData();
+                        cubes[syncNrOfCubes] = new CubeData(Util.TEXTURE_HEAD0, Util.TEXTURE_FACE0);
                         cubes[syncNrOfCubes].visible = true;
                         ids[i] = parts[1];
                         syncNrOfCubes++;
@@ -686,6 +705,69 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         return "";
     }
 
+    // head {id} {n7} {head}
+    private String setHead(String[] parts) {
+        if (parts.length == 4) {
+            synchronized (settingsLock) {
+                long n = 0;
+                int h;
+                try {
+                    n = Integer.parseInt(parts[2]);
+                    h = Integer.parseInt(parts[3]);
+                } catch (Exception e) {
+                    return e.toString();
+                }
+                boolean found = false;
+                int i;
+                for (i = 0; i < syncNrOfCubes; i++) {
+                    if (ids[i].equals(parts[1])) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    if (n >= cubes[i].idx_head) {
+                        cubes[i].idx_head = n;
+                        cubes[i].texturehead = getHeadTexture(h);
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    // face {id} {n7} {face}
+    private String setFace(String[] parts) {
+        if (parts.length == 4) {
+            synchronized (settingsLock) {
+                long n = 0;
+                int h;
+                try {
+                    n = Integer.parseInt(parts[2]);
+                    h = Integer.parseInt(parts[3]);
+                } catch (Exception e) {
+                    return e.toString();
+                }
+                boolean found = false;
+                int i;
+                for (i = 0; i < syncNrOfCubes; i++) {
+                    if (ids[i].equals(parts[1])) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    if (n >= cubes[i].idx_face) {
+                        cubes[i].idx_face = n;
+                        cubes[i].textureface = getFaceTexture(h);
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+
     // info {n5} {nr of lines}
     // info {n5} {nr of lines} {responce ID} {choice 1} {choice 2}
     private String setInfo(String[] parts, int index) {
@@ -756,5 +838,37 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             }
         }
         return "";
+    }
+
+    private int getHeadTexture(int h) {
+        if (h == 1) return Util.TEXTURE_HEAD1;
+        if (h == 2) return Util.TEXTURE_HEAD2;
+        return Util.TEXTURE_HEAD0;
+    }
+
+    private int getFaceTexture(int h) {
+        if (h == 1) return Util.TEXTURE_FACE1;
+        if (h == 2) return Util.TEXTURE_FACE2;
+        return Util.TEXTURE_FACE0;
+    }
+
+    private void setBitMap(int bitmap, int texture) {
+
+        // Temporary create a bitmap
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(), bitmap);
+
+        // Bind texture to texturename
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        Util.checkGlError("glActiveTexture");
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texturenames[texture]);
+        Util.checkGlError("glBindTexture");
+
+        // Load the bitmap into the bound texture.
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        Util.checkGlError("texImage2D");
+
+        // We are done using the bitmap so we should recycle it.
+        bmp.recycle();
+
     }
 }

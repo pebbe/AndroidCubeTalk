@@ -12,15 +12,17 @@ import java.nio.FloatBuffer;
 
 public class Kubus {
 
-    private final static int ARRAY_SIZE = (6 * 6 + 9) * 3;
+    private final static int ARRAY_SIZE1 = (1 * 6) * 3;
+    private final static int ARRAY_SIZE2 = (5 * 6) * 3;
 
-    private FloatBuffer coordsBuffer;
-    private FloatBuffer colorsBuffer;
+    private FloatBuffer coordsBuffer1;
+    private FloatBuffer coordsBuffer2;
+    private FloatBuffer colorsBuffer1;
+    private FloatBuffer colorsBuffer2;
     private final int mProgram;
     private int mPositionHandle;
     private int mColorHandle;
     private int mCubeSizeHandle;
-    private int texture;
 
     private final String vertexShaderCode = "" +
             "uniform mat4 uMVPMatrix;" +
@@ -42,105 +44,121 @@ public class Kubus {
             "varying vec3 col;" +
             "varying vec3 cl;" +
             "void main() {" +
-            "    gl_FragColor = vec4(col[2] * cl, 1.0) * texture2D(texture, vec2(col[0], col[1]));" +
+            "    gl_FragColor = vec4(cl, 1.0) * texture2D(texture, vec2(col[0], col[1]));" +
             "}";
 
     static final int COORDS_PER_VERTEX = 3;
-    static float Coords[] = new float[ARRAY_SIZE];
+    static float Coords1[] = new float[ARRAY_SIZE1];
+    static float Coords2[] = new float[ARRAY_SIZE2];
     private final int coordStride = COORDS_PER_VERTEX * 4; // 4 bytes per float
 
     static final int COLORS_PER_VERTEX = 3;
-    static float Colors[] = new float[ARRAY_SIZE];
-    private final int colorStride = COLORS_PER_VERTEX * 4; // 4 bytes per float
+    static float Colors1[] = new float[ARRAY_SIZE1];
+    static float Colors2[] = new float[ARRAY_SIZE2];
+   private final int colorStride = COLORS_PER_VERTEX * 4; // 4 bytes per float
 
-    private int vertexCount;
+    private int vertexCount1;
+    private int vertexCount2;
 
-    private void punt(float x, float y, float z, float xi, float yi, float c) {
-        Coords[COORDS_PER_VERTEX * vertexCount + 0] = x;
-        Coords[COORDS_PER_VERTEX * vertexCount + 1] = y;
-        Coords[COORDS_PER_VERTEX * vertexCount + 2] = z;
-        Colors[COLORS_PER_VERTEX * vertexCount + 0] = xi;
-        Colors[COLORS_PER_VERTEX * vertexCount + 1] = yi;
-        Colors[COLORS_PER_VERTEX * vertexCount + 2] = c;
-        vertexCount ++;
+    private void punt1(float x, float y, float z, float xi, float yi, float front) {
+        Coords1[COORDS_PER_VERTEX * vertexCount1 + 0] = x;
+        Coords1[COORDS_PER_VERTEX * vertexCount1 + 1] = y;
+        Coords1[COORDS_PER_VERTEX * vertexCount1 + 2] = z;
+        Colors1[COLORS_PER_VERTEX * vertexCount1 + 0] = xi;
+        Colors1[COLORS_PER_VERTEX * vertexCount1 + 1] = yi;
+        Colors1[COLORS_PER_VERTEX * vertexCount1 + 2] = front;
+        vertexCount1++;
     }
 
-    public Kubus(Context context, int texturename) {
-        texture = texturename;
-        vertexCount = 0;
+    private void punt2(float x, float y, float z, float xi, float yi, float front) {
+        Coords2[COORDS_PER_VERTEX * vertexCount2 + 0] = x;
+        Coords2[COORDS_PER_VERTEX * vertexCount2 + 1] = y;
+        Coords2[COORDS_PER_VERTEX * vertexCount2 + 2] = z;
+        Colors2[COLORS_PER_VERTEX * vertexCount2 + 0] = xi;
+        Colors2[COLORS_PER_VERTEX * vertexCount2 + 1] = yi;
+        Colors2[COLORS_PER_VERTEX * vertexCount2 + 2] = front;
+        vertexCount2++;
+    }
 
-        // boven 6
-        punt(-1, 1, -1, 0, 0, 1);
-        punt(-1, 1, 1, 0, 1, 1);
-        punt(1, 1, 1, 1, 1, 1);
-        punt(-1, 1, -1, 0, 0, 1);
-        punt(1, 1, 1, 1, 1, 1);
-        punt(1, 1, -1, 1, 0, 1);
+    public Kubus() {
+        vertexCount1 = 0;
+        vertexCount2 = 0;
 
-        // links 2
-        punt(-1, 1, -1, 0, 0, .6f);
-        punt(-1, -1, -1, 0, 1, .6f);
-        punt(-1, -1, 1, 1, 1, .6f);
-        punt(-1, 1, -1, 0, 0, .6f);
-        punt(-1, -1, 1, 1, 1, .6f);
-        punt(-1, 1, 1, 1, 0, .6f);
+        // gezicht
 
-        punt(-1.01f, -.9f, 0, .5f, .95f, .3f);
-        punt(-1.01f, 0, -.9f, .95f, .5f, .3f);
-        punt(-1.01f, -.9f, -.9f, .95f, .95f, .3f);
+        punt1(-1, 1, 1, 0, 0, 1);
+        punt1(-1, -1, 1, 0, 1, 1);
+        punt1(1, -1, 1, 1, 1, 1);
+        punt1(-1, 1, 1, 0, 0, 1);
+        punt1(1, -1, 1, 1, 1, 1);
+        punt1(1, 1, 1, 1, 0, 1);
 
-        // voor 4
-        punt(-1, 1, 1, 0, 0, .8f);
-        punt(-1, -1, 1, 0, 1, .8f);
-        punt(1, -1, 1, 1, 1, .8f);
-        punt(-1, 1, 1, 0, 0, .8f);
-        punt(1, -1, 1, 1, 1, .8f);
-        punt(1, 1, 1, 1, 0, .8f);
+        // hoofd
 
-        punt(-.4f, -.5f, 1.01f, .3f, .25f, .4f);
-        punt(.4f, -.5f, 1.01f, .7f, .25f, .4f);
-        punt(0, .5f, 1.01f, .5f, .75f, .4f);
+        // rechts 1
+        punt2(-1, 1, -1, .2f, 0, 0);
+        punt2(-1, -1, -1, .2f, 1, 0);
+        punt2(-1, -1, 1, 0, 1, 0);
+        punt2(-1, 1, -1, .2f, 0, 0);
+        punt2(-1, -1, 1, 0, 1, 0);
+        punt2(-1, 1, 1, 0, 0, 0);
 
-        // rechts 5
-        punt(1, 1, 1, 0, 0, .6f);
-        punt(1, -1, 1, 0, 1, .6f);
-        punt(1, -1, -1, 1, 1, .6f);
-        punt(1, 1, 1, 0, 0, .6f);
-        punt(1, -1, -1, 1, 1, .6f);
-        punt(1, 1, -1, 1, 0, .6f);
+        // achter 2
+        punt2(1, 1, -1, .2f, 0, 0);
+        punt2(1, -1, -1, .2f, 1, 0);
+        punt2(-1, -1, -1, .4f, 1, 0);
+        punt2(1, 1, -1, .2f, 0, 0);
+        punt2(-1, -1, -1, .4f, 1, 0);
+        punt2(-1, 1, -1, .4f, 0, 0);
 
-        punt(1.01f, -.9f, 0, .5f, .95f, .3f);
-        punt(1.01f, -.9f, -.9f, .05f, .95f, .3f);
-        punt(1.01f, 0, -.9f, .05f, .5f, .3f);
+        // links 3
+        punt2(1, 1, 1, .6f, 0, 0);
+        punt2(1, -1, 1, .6f, 1, 0);
+        punt2(1, -1, -1, .4f, 1, 0);
+        punt2(1, 1, 1, .6f, 0, 0);
+        punt2(1, -1, -1, .4f, 1, 0);
+        punt2(1, 1, -1, .4f, 0, 0);
 
-        // achter 3
-        punt(1, 1, -1, 0, 0, .4f);
-        punt(1, -1, -1, 0, 1, .4f);
-        punt(-1, -1, -1, 1, 1, .4f);
-        punt(1, 1, -1, 0, 0, .4f);
-        punt(-1, -1, -1, 1, 1, .4f);
-        punt(-1, 1, -1, 1, 0, .4f);
+        // boven 4
+        punt2(-1, 1, -1, .6f, 1, 0);
+        punt2(-1, 1, 1, .6f, 0, 0);
+        punt2(1, 1, 1, .8f, 0, 0);
+        punt2(-1, 1, -1, .6f, 1, 0);
+        punt2(1, 1, 1, .8f, 0, 0);
+        punt2(1, 1, -1, .8f, 1, 0);
 
-        // onder 1
-        punt(-1, -1, 1, 0, 0, .2f);
-        punt(-1, -1, -1, 0, 1, .2f);
-        punt(1, -1, -1, 1, 1, .2f);
-        punt(-1, -1, 1, 0, 0, .2f);
-        punt(1, -1, -1, 1, 1, .2f);
-        punt(1, -1, 1, 1, 0, .2f);
+        // onder 5
+        punt2(-1, -1, 1, .8f, 1, 0);
+        punt2(-1, -1, -1, .8f, 0, 0);
+        punt2(1, -1, -1, 1, 0, 0);
+        punt2(-1, -1, 1, .8f, 1, 0);
+        punt2(1, -1, -1, 1, 0, 0);
+        punt2(1, -1, 1, 1, 1, 0);
 
 
-        ByteBuffer b1 = ByteBuffer.allocateDirect(ARRAY_SIZE * 4);
+        ByteBuffer b1 = ByteBuffer.allocateDirect(ARRAY_SIZE1 * 4);
         b1.order(ByteOrder.nativeOrder());
-        coordsBuffer = b1.asFloatBuffer();
-        coordsBuffer.put(Coords);
-        coordsBuffer.position(0);
+        coordsBuffer1 = b1.asFloatBuffer();
+        coordsBuffer1.put(Coords1);
+        coordsBuffer1.position(0);
 
-        ByteBuffer b2 = ByteBuffer.allocateDirect(ARRAY_SIZE * 4);
+        ByteBuffer b2 = ByteBuffer.allocateDirect(ARRAY_SIZE2 * 4);
         b2.order(ByteOrder.nativeOrder());
-        colorsBuffer = b2.asFloatBuffer();
-        colorsBuffer.put(Colors);
-        colorsBuffer.position(0);
+        coordsBuffer2 = b2.asFloatBuffer();
+        coordsBuffer2.put(Coords2);
+        coordsBuffer2.position(0);
+
+        ByteBuffer b3 = ByteBuffer.allocateDirect(ARRAY_SIZE1 * 4);
+        b3.order(ByteOrder.nativeOrder());
+        colorsBuffer1 = b3.asFloatBuffer();
+        colorsBuffer1.put(Colors1);
+        colorsBuffer1.position(0);
+
+        ByteBuffer b4 = ByteBuffer.allocateDirect(ARRAY_SIZE2 * 4);
+        b4.order(ByteOrder.nativeOrder());
+        colorsBuffer2 = b4.asFloatBuffer();
+        colorsBuffer2.put(Colors2);
+        colorsBuffer2.position(0);
 
         int vertexShader = Util.loadShader(
                 GLES20.GL_VERTEX_SHADER, vertexShaderCode);
@@ -155,25 +173,15 @@ public class Kubus {
         GLES20.glLinkProgram(mProgram);                  // create OpenGL program executables
         Util.checkGlError("glLinkProgram");
 
-        // Temporary create a bitmap
-        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.raw.beton);
-
-        // Bind texture to texturename
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        Util.checkGlError("glActiveTexture");
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-        Util.checkGlError("glBindTexture");
-
-        // Load the bitmap into the bound texture.
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
-        Util.checkGlError("texImage2D");
-
-        // We are done using the bitmap so we should recycle it.
-        bmp.recycle();
     }
 
-    public void draw(float[] mvpMatrix, float red, float green, float blue, float[] cubesize) {
+    public void draw(float[] mvpMatrix, float red, float green, float blue, float[] cubesize, int texturehead, int textureface) {
+        drawPart(mvpMatrix, red, green, blue, cubesize, 1, textureface);
+        drawPart(mvpMatrix, red, green, blue, cubesize, 2, texturehead);
+    }
+
+    private void drawPart(float[] mvpMatrix, float red, float green, float blue, float[] cubesize, int part, int texture) {
+
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
         Util.checkGlError("glUseProgram");
@@ -200,7 +208,7 @@ public class Kubus {
         GLES20.glVertexAttribPointer(
                 mPositionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                coordStride, coordsBuffer);
+                coordStride, part == 1 ? coordsBuffer1 : coordsBuffer2);
         Util.checkGlError("glVertexAttribPointer position");
 
         mColorHandle = GLES20.glGetAttribLocation(mProgram, "color");
@@ -210,7 +218,7 @@ public class Kubus {
         GLES20.glVertexAttribPointer(
                 mColorHandle, COLORS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
-                colorStride, colorsBuffer);
+                colorStride, part == 1 ? colorsBuffer1 : colorsBuffer2);
         Util.checkGlError("glVertexAttribPointer color");
 
         int mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
@@ -229,14 +237,14 @@ public class Kubus {
         Util.checkGlError("glUniform3f uCubeSize");
 
         // Get handle to textures locations
-        int mSamplerLoc = GLES20.glGetUniformLocation (mProgram, "texture" );
+        int mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "texture");
         Util.checkGlError("glGetUniformLocation texture");
         // Set the sampler texture unit to 0, where we have saved the texture.
         GLES20.glUniform1i(mSamplerLoc, 0);
         Util.checkGlError("glUniform1i mSamplerLoc");
 
         // Draw
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, part == 1 ? vertexCount1 : vertexCount2);
         Util.checkGlError("glDrawArrays");
 
         // Disable vertex arrays
@@ -245,4 +253,5 @@ public class Kubus {
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         Util.checkGlError("glDisableVertexAttribArray positionHandle");
     }
+
 }
