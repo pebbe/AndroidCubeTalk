@@ -12,6 +12,7 @@ func controller() {
 
 	initFaces()
 	initSize()
+	initNodding()
 
 	for {
 		select {
@@ -126,12 +127,9 @@ func handleReq(req tRequest) {
 
 				// assumption: forward is horizontal
 
-				// vertical movement (nodding) is amplified by cube.nod
-				// cube.nod can by modified for each user and each cube s/he sees individually
-				// currently, the GUI only allows setting all cubes for all users to the same value
-
 				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-				rotV := nodEnhance(math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z)), cube.nod)
+				rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
+				rotV = doNod(idx, i, rotV)
 
 				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 					cube.uid,
@@ -256,37 +254,11 @@ func handleCmd(cmd string) {
 		if w(err) != nil {
 			return
 		}
-		for _, user := range users {
-			for _, cube := range user.cubes {
-				if cube != nil {
-					cube.nod = f
-				}
-			}
-		}
+		setNodAll(f)
 
 	default:
 
 		w(fmt.Errorf("Invalid command from GUI: %s", cmd))
 
 	}
-}
-
-func nodEnhance(rotV, enhance float64) float64 {
-	if enhance >= -1.0 && enhance <= 1.0 {
-		return rotV * enhance
-	}
-
-	sign := 1.0
-	if math.Signbit(enhance) {
-		sign = -1.0
-		enhance = -enhance
-	}
-
-	var v float64
-	if rotV < 0 {
-		v = -0.5 * math.Pi * (1.0 - math.Pow(1.0+rotV*2.0/math.Pi, enhance))
-	} else {
-		v = 0.5 * math.Pi * (1.0 - math.Pow(1.0-rotV*2.0/math.Pi, enhance))
-	}
-	return sign * v
 }

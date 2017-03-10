@@ -30,7 +30,6 @@ type tCube struct {
 	head        int // texture number
 	face        int // texture number
 	lookingatme bool
-	nod         float64
 }
 
 type tUser struct {
@@ -144,8 +143,6 @@ func makeUsers() {
 						0,
 						-math.Cos(rotH),
 					},
-
-					nod: 1, // standard value for nodding: no amplification
 				}
 				dx := c.pos.x
 				dy := c.pos.y
