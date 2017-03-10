@@ -65,28 +65,28 @@ var (
 			pos:   tXYZ{0, 0, -1},
 			color: tRGB{0, .6, 0}, // green
 			head:  2,
-			face:  0,
+			face:  2,
 		},
 		tCube{
 			uid:   "D",
 			pos:   tXYZ{-1, 0, 0},
 			color: tRGB{.4, .7, 1}, // blue
-			head:  0,
-			face:  1,
+			head:  3,
+			face:  3,
 		},
 		tCube{
 			uid:   "E",
 			pos:   tXYZ{.5, .75, -1},
 			color: tRGB{1, .6, .6}, // red
-			head:  1,
-			face:  0,
+			head:  4,
+			face:  4,
 		},
 		tCube{
 			uid:   "F",
 			pos:   tXYZ{-.5, -.75, 1},
 			color: tRGB{.5, .5, .5}, // grey
-			head:  2,
-			face:  1,
+			head:  5,
+			face:  5,
 		},
 	}
 

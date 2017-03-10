@@ -12,12 +12,24 @@ public class Util {
     public final static int TEXTURE_HEAD1 = 4;
     public final static int TEXTURE_HEAD2 = 5;
     public final static int TEXTURE_HEAD3 = 6;
-    public final static int TEXTURE_FACE0 = 7;
-    public final static int TEXTURE_FACE1 = 8;
-    public final static int TEXTURE_FACE2 = 9;
-    public final static int TEXTURE_FACE3 = 10;
+    public final static int TEXTURE_HEAD4 = 7;
+    public final static int TEXTURE_HEAD5 = 8;
+    public final static int TEXTURE_HEAD6 = 9;
+    public final static int TEXTURE_HEAD7 = 10;
+    public final static int TEXTURE_HEAD8 = 11;
+    public final static int TEXTURE_HEAD9 = 12;
+    public final static int TEXTURE_FACE0 = 13;
+    public final static int TEXTURE_FACE1 = 14;
+    public final static int TEXTURE_FACE2 = 15;
+    public final static int TEXTURE_FACE3 = 16;
+    public final static int TEXTURE_FACE4 = 17;
+    public final static int TEXTURE_FACE5 = 18;
+    public final static int TEXTURE_FACE6 = 19;
+    public final static int TEXTURE_FACE7 = 20;
+    public final static int TEXTURE_FACE8 = 21;
+    public final static int TEXTURE_FACE9 = 22;
 
-    public final static int NR_OF_TEXTURES = 11;
+    public final static int NR_OF_TEXTURES = 23;
 
 
     public final static String kAddress = "address";

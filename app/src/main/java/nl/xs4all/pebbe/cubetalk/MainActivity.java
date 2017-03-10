@@ -176,9 +176,23 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         setBitMap(R.raw.head5a, Util.TEXTURE_HEAD0);
         setBitMap(R.raw.head5b, Util.TEXTURE_HEAD1);
         setBitMap(R.raw.head5c, Util.TEXTURE_HEAD2);
+        setBitMap(R.raw.head5d, Util.TEXTURE_HEAD3);
+        setBitMap(R.raw.head5e, Util.TEXTURE_HEAD4);
+        setBitMap(R.raw.head5f, Util.TEXTURE_HEAD5);
+        setBitMap(R.raw.head5g, Util.TEXTURE_HEAD6);
+        setBitMap(R.raw.head5h, Util.TEXTURE_HEAD7);
+        setBitMap(R.raw.head5i, Util.TEXTURE_HEAD8);
+        setBitMap(R.raw.head5j, Util.TEXTURE_HEAD9);
         setBitMap(R.raw.face1a, Util.TEXTURE_FACE0);
         setBitMap(R.raw.face1b, Util.TEXTURE_FACE1);
         setBitMap(R.raw.face1c, Util.TEXTURE_FACE2);
+        setBitMap(R.raw.face1d, Util.TEXTURE_FACE3);
+        setBitMap(R.raw.face1e, Util.TEXTURE_FACE4);
+        setBitMap(R.raw.face1f, Util.TEXTURE_FACE5);
+        setBitMap(R.raw.face1g, Util.TEXTURE_FACE6);
+        setBitMap(R.raw.face1h, Util.TEXTURE_FACE7);
+        setBitMap(R.raw.face1i, Util.TEXTURE_FACE8);
+        setBitMap(R.raw.face1j, Util.TEXTURE_FACE9);
 
         kubus = new Kubus();
         wereld = new Wereld(this, texturenames[Util.TEXTURE_WORLD]);
@@ -841,15 +855,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     }
 
     private int getHeadTexture(int h) {
-        if (h == 1) return Util.TEXTURE_HEAD1;
-        if (h == 2) return Util.TEXTURE_HEAD2;
-        return Util.TEXTURE_HEAD0;
+        return Util.TEXTURE_HEAD0 + h % (Util.TEXTURE_FACE0 - Util.TEXTURE_HEAD0);
     }
 
     private int getFaceTexture(int h) {
-        if (h == 1) return Util.TEXTURE_FACE1;
-        if (h == 2) return Util.TEXTURE_FACE2;
-        return Util.TEXTURE_FACE0;
+        return Util.TEXTURE_FACE0 + h % (Util.NR_OF_TEXTURES - Util.TEXTURE_FACE0);
     }
 
     private void setBitMap(int bitmap, int texture) {
