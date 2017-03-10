@@ -8,14 +8,10 @@ import (
 	"strings"
 )
 
-var (
-	setsize  = make([]bool, len(cubes))
-	cubesize = [3]float64{1, 1, 1}
-)
-
 func controller() {
 
 	initFaces()
+	initSize()
 
 	for {
 		select {
@@ -48,7 +44,7 @@ func handleReq(req tRequest) {
 			user.n[i] = 0
 		}
 
-		setsize[idx] = true
+		resetSize(idx)
 
 		for i := range cubes {
 			if i != idx {
@@ -167,10 +163,7 @@ func handleReq(req tRequest) {
 
 		}
 
-		if setsize[idx] {
-			setsize[idx] = false
-			ch <- fmt.Sprintf("cubesize %d %g %g %g\n", user.n[6], cubesize[0], cubesize[1], cubesize[2])
-		}
+		showSize(ch, idx)
 
 		showFaces(ch, idx)
 
@@ -221,17 +214,15 @@ func handleCmd(cmd string) {
 			w(fmt.Errorf(number_args, cmd))
 			return
 		}
+		var f [3]float64
 		for i := 0; i < 3; i++ {
 			var err error
-			cubesize[i], err = strconv.ParseFloat(words[i+1], 64)
+			f[i], err = strconv.ParseFloat(words[i+1], 64)
 			if w(err) != nil {
-				cubesize[i] = 1
+				f[i] = 1
 			}
 		}
-		for i := range cubes {
-			setsize[i] = true
-			users[i].n[6]++
-		}
+		setSize(f[0], f[1], f[2])
 
 	case "recenter":
 
