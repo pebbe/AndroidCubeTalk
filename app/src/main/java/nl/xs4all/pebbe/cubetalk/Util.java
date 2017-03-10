@@ -5,6 +5,8 @@ import android.util.Log;
 
 public class Util {
 
+    // if you need more heads: insert after last head, and renumber the faces
+
     public final static int TEXTURE_WORLD = 0;
     public final static int TEXTURE_INFO0 = 1;
     public final static int TEXTURE_INFO1 = 2;
