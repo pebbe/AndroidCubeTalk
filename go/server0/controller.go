@@ -46,13 +46,13 @@ func handleReq(req tRequest) {
 			user.n[i] = 0
 		}
 
+		user.init = false
+
 		resetSize(idx)
 
 		resetLooking(idx)
 
 		resetFaces(idx)
-
-		user.init = false
 
 	case "lookat":
 
@@ -126,6 +126,7 @@ func handleReq(req tRequest) {
 
 				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
 				rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
+
 				rotV = doNod(idx, i, rotV)
 
 				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
@@ -138,15 +139,15 @@ func handleReq(req tRequest) {
 			}
 		}
 
+		if marked {
+			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
+		}
+
 		showLooking(ch, idx)
 
 		showSize(ch, idx)
 
 		showFaces(ch, idx)
-
-		if marked {
-			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
-		}
 
 	default:
 
