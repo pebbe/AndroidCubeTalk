@@ -5,11 +5,15 @@ import (
 )
 
 var (
-	setsize  = make([]bool, len(cubes)) // assumption: len(users) == len(cubes)
-	cubesize = [3]float64{1, 1, 1}
+	setsize  []bool
+	cubesize [3]float64
 )
 
 func initSize() {
+	setsize = make([]bool, len(users))
+	cubesize[0] = 1
+	cubesize[1] = 1
+	cubesize[2] = 1
 }
 
 func resetSize(user int) {
