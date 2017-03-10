@@ -64,6 +64,7 @@ func handleReq(req tRequest) {
 		for i := range cubes {
 			if i != idx {
 				setface[idx] = append(setface[idx], i)
+				user.cubes[i].lookingatme = false
 			}
 		}
 
