@@ -13,6 +13,7 @@ func controller() {
 	initFaces()
 	initSize()
 	initNodding()
+	initLooking()
 
 	for {
 		select {
@@ -47,11 +48,7 @@ func handleReq(req tRequest) {
 
 		resetSize(idx)
 
-		for i := range cubes {
-			if i != idx {
-				user.cubes[i].lookingatme = false
-			}
-		}
+		resetLooking(idx)
 
 		resetFaces(idx)
 
@@ -138,28 +135,10 @@ func handleReq(req tRequest) {
 					math.Sin(rotV),
 					math.Cos(rotH)*math.Cos(rotV),
 					users[i].roll)
-
-				// change color of cube to orange if it is looking at me
-				v := users[i].lookat
-				w := users[i].cubes[idx].towards
-				if v.x*w.x+v.y*w.y+v.z*w.z > *opt_t {
-					if !cube.lookingatme {
-						cube.lookingatme = true
-						user.n[4]++
-						ch <- fmt.Sprintf("color %s %d 1 .7 0\n", cube.uid, user.n[4])
-						chLog <- fmt.Sprintf("I Begin %s looking at %s", cube.uid, req.uid)
-					}
-				} else {
-					if cube.lookingatme {
-						cube.lookingatme = false
-						user.n[4]++
-						ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
-						chLog <- fmt.Sprintf("I End %s looking at %s", cube.uid, req.uid)
-					}
-				}
 			}
-
 		}
+
+		showLooking(ch, idx)
 
 		showSize(ch, idx)
 
