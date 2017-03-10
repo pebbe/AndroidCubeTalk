@@ -11,21 +11,11 @@ import (
 var (
 	setsize  = make([]bool, len(cubes))
 	cubesize = [3]float64{1, 1, 1}
-
-	setface = make([][]int, len(cubes))
-	face    = make([]int, len(cubes))
 )
 
 func controller() {
-	for i, cube := range cubes {
-		setface[i] = make([]int, 0, len(cubes)-1)
-		face[i] = cube.face
-		for j := range cubes {
-			if i != j {
-				setface[i] = append(setface[i], j)
-			}
-		}
-	}
+
+	initFaces()
 
 	for {
 		select {
@@ -60,13 +50,13 @@ func handleReq(req tRequest) {
 
 		setsize[idx] = true
 
-		setface[idx] = setface[idx][0:0]
 		for i := range cubes {
 			if i != idx {
-				setface[idx] = append(setface[idx], i)
 				user.cubes[i].lookingatme = false
 			}
 		}
+
+		resetFaces(idx)
 
 		user.init = false
 
@@ -182,11 +172,7 @@ func handleReq(req tRequest) {
 			ch <- fmt.Sprintf("cubesize %d %g %g %g\n", user.n[6], cubesize[0], cubesize[1], cubesize[2])
 		}
 
-		for _, i := range setface[idx] {
-			user.n[8]++
-			ch <- fmt.Sprintf("face %s %d %d\n", cubes[i].uid, user.n[8], face[i])
-		}
-		setface[idx] = setface[idx][0:0]
+		showFaces(ch, idx)
 
 		if marked {
 			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
@@ -227,12 +213,7 @@ func handleCmd(cmd string) {
 			return
 		}
 
-		face[idx] = int(f)
-		for i := range cubes {
-			if i != idx {
-				setface[i] = append(setface[i], idx)
-			}
-		}
+		setFace(idx, int(f))
 
 	case "cubesize":
 
