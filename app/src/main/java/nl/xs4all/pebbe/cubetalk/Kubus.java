@@ -12,8 +12,10 @@ import java.nio.FloatBuffer;
 
 public class Kubus {
 
-    private final static int ARRAY_SIZE1 = (1 * 6) * 3;
-    private final static int ARRAY_SIZE2 = (5 * 6) * 3;
+    private final static int VERTEX_ARRAY_SIZE1 = (1 * 6) * 3;
+    private final static int VERTEX_ARRAY_SIZE2 = (5 * 6) * 3;
+    private final static int COLOR_ARRAY_SIZE1 = (1 * 6) * 2;
+    private final static int COLOR_ARRAY_SIZE2 = (5 * 6) * 2;
 
     private FloatBuffer coordsBuffer1;
     private FloatBuffer coordsBuffer2;
@@ -28,9 +30,9 @@ public class Kubus {
             "uniform mat4 uMVPMatrix;" +
             "uniform vec3 uCubeSize;" +
             "attribute vec3 position;" +
-            "attribute vec3 color;" +
+            "attribute vec2 color;" +
             "uniform vec3 rgb;" +
-            "varying vec3 col;" +
+            "varying vec2 col;" +
             "varying vec3 cl;" +
             "void main() {" +
             "    gl_Position = uMVPMatrix * vec4(uCubeSize*position, 1);" +
@@ -41,42 +43,40 @@ public class Kubus {
     private final String fragmentShaderCode = "" +
             "precision mediump float;" +
             "uniform sampler2D texture;" +
-            "varying vec3 col;" +
+            "varying vec2 col;" +
             "varying vec3 cl;" +
             "void main() {" +
             "    gl_FragColor = vec4(cl, 1.0) * texture2D(texture, vec2(col[0], col[1]));" +
             "}";
 
     static final int COORDS_PER_VERTEX = 3;
-    static float Coords1[] = new float[ARRAY_SIZE1];
-    static float Coords2[] = new float[ARRAY_SIZE2];
+    static float Coords1[] = new float[VERTEX_ARRAY_SIZE1];
+    static float Coords2[] = new float[VERTEX_ARRAY_SIZE2];
     private final int coordStride = COORDS_PER_VERTEX * 4; // 4 bytes per float
 
-    static final int COLORS_PER_VERTEX = 3;
-    static float Colors1[] = new float[ARRAY_SIZE1];
-    static float Colors2[] = new float[ARRAY_SIZE2];
+    static final int COLORS_PER_VERTEX = 2;
+    static float Colors1[] = new float[COLOR_ARRAY_SIZE1];
+    static float Colors2[] = new float[COLOR_ARRAY_SIZE2];
    private final int colorStride = COLORS_PER_VERTEX * 4; // 4 bytes per float
 
     private int vertexCount1;
     private int vertexCount2;
 
-    private void punt1(float x, float y, float z, float xi, float yi, float front) {
+    private void punt1(float x, float y, float z, float xi, float yi) {
         Coords1[COORDS_PER_VERTEX * vertexCount1 + 0] = x;
         Coords1[COORDS_PER_VERTEX * vertexCount1 + 1] = y;
         Coords1[COORDS_PER_VERTEX * vertexCount1 + 2] = z;
         Colors1[COLORS_PER_VERTEX * vertexCount1 + 0] = xi;
         Colors1[COLORS_PER_VERTEX * vertexCount1 + 1] = yi;
-        Colors1[COLORS_PER_VERTEX * vertexCount1 + 2] = front;
         vertexCount1++;
     }
 
-    private void punt2(float x, float y, float z, float xi, float yi, float front) {
+    private void punt2(float x, float y, float z, float xi, float yi) {
         Coords2[COORDS_PER_VERTEX * vertexCount2 + 0] = x;
         Coords2[COORDS_PER_VERTEX * vertexCount2 + 1] = y;
         Coords2[COORDS_PER_VERTEX * vertexCount2 + 2] = z;
         Colors2[COLORS_PER_VERTEX * vertexCount2 + 0] = xi;
         Colors2[COLORS_PER_VERTEX * vertexCount2 + 1] = yi;
-        Colors2[COLORS_PER_VERTEX * vertexCount2 + 2] = front;
         vertexCount2++;
     }
 
@@ -86,75 +86,75 @@ public class Kubus {
 
         // gezicht
 
-        punt1(-1, 1, 1, 0, 0, 1);
-        punt1(-1, -1, 1, 0, 1, 1);
-        punt1(1, -1, 1, 1, 1, 1);
-        punt1(-1, 1, 1, 0, 0, 1);
-        punt1(1, -1, 1, 1, 1, 1);
-        punt1(1, 1, 1, 1, 0, 1);
+        punt1(-1, 1, 1, 0, 0);
+        punt1(-1, -1, 1, 0, 1);
+        punt1(1, -1, 1, 1, 1);
+        punt1(-1, 1, 1, 0, 0);
+        punt1(1, -1, 1, 1, 1);
+        punt1(1, 1, 1, 1, 0);
 
         // hoofd
 
         // rechts 1
-        punt2(-1, 1, -1, .2f, 0, 0);
-        punt2(-1, -1, -1, .2f, 1, 0);
-        punt2(-1, -1, 1, 0, 1, 0);
-        punt2(-1, 1, -1, .2f, 0, 0);
-        punt2(-1, -1, 1, 0, 1, 0);
-        punt2(-1, 1, 1, 0, 0, 0);
+        punt2(-1, 1, -1, .2f, 0);
+        punt2(-1, -1, -1, .2f, 1);
+        punt2(-1, -1, 1, 0, 1);
+        punt2(-1, 1, -1, .2f, 0);
+        punt2(-1, -1, 1, 0, 1);
+        punt2(-1, 1, 1, 0, 0);
 
         // achter 2
-        punt2(1, 1, -1, .2f, 0, 0);
-        punt2(1, -1, -1, .2f, 1, 0);
-        punt2(-1, -1, -1, .4f, 1, 0);
-        punt2(1, 1, -1, .2f, 0, 0);
-        punt2(-1, -1, -1, .4f, 1, 0);
-        punt2(-1, 1, -1, .4f, 0, 0);
+        punt2(1, 1, -1, .2f, 0);
+        punt2(1, -1, -1, .2f, 1);
+        punt2(-1, -1, -1, .4f, 1);
+        punt2(1, 1, -1, .2f, 0);
+        punt2(-1, -1, -1, .4f, 1);
+        punt2(-1, 1, -1, .4f, 0);
 
         // links 3
-        punt2(1, 1, 1, .6f, 0, 0);
-        punt2(1, -1, 1, .6f, 1, 0);
-        punt2(1, -1, -1, .4f, 1, 0);
-        punt2(1, 1, 1, .6f, 0, 0);
-        punt2(1, -1, -1, .4f, 1, 0);
-        punt2(1, 1, -1, .4f, 0, 0);
+        punt2(1, 1, 1, .6f, 0);
+        punt2(1, -1, 1, .6f, 1);
+        punt2(1, -1, -1, .4f, 1);
+        punt2(1, 1, 1, .6f, 0);
+        punt2(1, -1, -1, .4f, 1);
+        punt2(1, 1, -1, .4f, 0);
 
         // boven 4
-        punt2(-1, 1, -1, .6f, 1, 0);
-        punt2(-1, 1, 1, .6f, 0, 0);
-        punt2(1, 1, 1, .8f, 0, 0);
-        punt2(-1, 1, -1, .6f, 1, 0);
-        punt2(1, 1, 1, .8f, 0, 0);
-        punt2(1, 1, -1, .8f, 1, 0);
+        punt2(-1, 1, -1, .6f, 1);
+        punt2(-1, 1, 1, .6f, 0);
+        punt2(1, 1, 1, .8f, 0);
+        punt2(-1, 1, -1, .6f, 1);
+        punt2(1, 1, 1, .8f, 0);
+        punt2(1, 1, -1, .8f, 1);
 
         // onder 5
-        punt2(-1, -1, 1, .8f, 1, 0);
-        punt2(-1, -1, -1, .8f, 0, 0);
-        punt2(1, -1, -1, 1, 0, 0);
-        punt2(-1, -1, 1, .8f, 1, 0);
-        punt2(1, -1, -1, 1, 0, 0);
-        punt2(1, -1, 1, 1, 1, 0);
+        punt2(-1, -1, 1, .8f, 1);
+        punt2(-1, -1, -1, .8f, 0);
+        punt2(1, -1, -1, 1, 0);
+        punt2(-1, -1, 1, .8f, 1);
+        punt2(1, -1, -1, 1, 0);
+        punt2(1, -1, 1, 1, 1);
 
 
-        ByteBuffer b1 = ByteBuffer.allocateDirect(ARRAY_SIZE1 * 4);
+        ByteBuffer b1 = ByteBuffer.allocateDirect(VERTEX_ARRAY_SIZE1 * 4);
         b1.order(ByteOrder.nativeOrder());
         coordsBuffer1 = b1.asFloatBuffer();
         coordsBuffer1.put(Coords1);
         coordsBuffer1.position(0);
 
-        ByteBuffer b2 = ByteBuffer.allocateDirect(ARRAY_SIZE2 * 4);
+        ByteBuffer b2 = ByteBuffer.allocateDirect(VERTEX_ARRAY_SIZE2 * 4);
         b2.order(ByteOrder.nativeOrder());
         coordsBuffer2 = b2.asFloatBuffer();
         coordsBuffer2.put(Coords2);
         coordsBuffer2.position(0);
 
-        ByteBuffer b3 = ByteBuffer.allocateDirect(ARRAY_SIZE1 * 4);
+        ByteBuffer b3 = ByteBuffer.allocateDirect(COLOR_ARRAY_SIZE1 * 4);
         b3.order(ByteOrder.nativeOrder());
         colorsBuffer1 = b3.asFloatBuffer();
         colorsBuffer1.put(Colors1);
         colorsBuffer1.position(0);
 
-        ByteBuffer b4 = ByteBuffer.allocateDirect(ARRAY_SIZE2 * 4);
+        ByteBuffer b4 = ByteBuffer.allocateDirect(COLOR_ARRAY_SIZE2 * 4);
         b4.order(ByteOrder.nativeOrder());
         colorsBuffer2 = b4.asFloatBuffer();
         colorsBuffer2.put(Colors2);
