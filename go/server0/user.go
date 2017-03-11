@@ -22,14 +22,13 @@ type tRGB struct {
 
 // This has data on how a user sees another cube, except for actual head movement
 type tCube struct {
-	uid         string
-	pos         tXYZ // position
-	forward     tXYZ // neutral forward direction, unit vector, with y=0
-	towards     tXYZ // unit vector from user to this cube
-	color       tRGB
-	head        int // texture number
-	face        int // texture number
-	lookingatme bool
+	uid     string
+	pos     tXYZ // position
+	forward tXYZ // neutral forward direction, unit vector, with y=0
+	towards tXYZ // unit vector from user to this cube
+	color   tRGB
+	head    int // texture number
+	face    int // texture number
 }
 
 type tUser struct {

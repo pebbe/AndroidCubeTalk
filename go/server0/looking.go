@@ -13,6 +13,12 @@ var (
 	lookMarked [][]bool
 )
 
+func isLookingAt(from, to int) bool {
+	v := users[from].lookat
+	w := users[from].cubes[to].towards
+	return v.x*w.x+v.y*w.y+v.z*w.z > *opt_t
+}
+
 func initLooking() {
 	lookMarked = make([][]bool, len(users))
 	for i := range users {
@@ -37,9 +43,7 @@ func showLooking(ch chan string, me int) {
 
 		if markLookingAtMe {
 
-			v := users[i].lookat
-			w := users[i].cubes[me].towards
-			if v.x*w.x+v.y*w.y+v.z*w.z > *opt_t {
+			if isLookingAt(i, me) {
 				if !lookMarked[me][i] {
 					lookMarked[me][i] = true
 					user.n[4]++
@@ -59,9 +63,7 @@ func showLooking(ch chan string, me int) {
 
 		if markLookingAtThem {
 
-			v := user.lookat
-			w := user.cubes[i].towards
-			if v.x*w.x+v.y*w.y+v.z*w.z > *opt_t {
+			if isLookingAt(me, i) {
 				if !lookMarked[me][i] {
 					lookMarked[me][i] = true
 					user.n[4]++
