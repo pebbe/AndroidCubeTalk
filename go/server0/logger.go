@@ -14,7 +14,13 @@ const (
 
 func logger() {
 
+	stamp := func() string {
+		t := time.Now()
+		return fmt.Sprintf("%02d:%02d.%03d", t.Minute(), t.Second(), t.Nanosecond()/1000000)
+	}
+
 	start := time.Now()
+	s := stamp()
 
 	filename := fmt.Sprintf("%s-log-%s.txt.gz",
 		filepath.Base(os.Args[0]),
@@ -25,26 +31,23 @@ func logger() {
 
 	zw := gzip.NewWriter(fp)
 
-	fmt.Fprintln(zw, "I Start:", start.Format(time.RFC1123Z))
-	fmt.Fprintf(zw, "I Command line: %#v\n", os.Args)
+	fmt.Fprintln(zw, s, "I Start:", start.Format(time.RFC1123Z))
+	fmt.Fprintf(zw, s+" I Command line: %#v\n", os.Args)
 
 	defer func() {
 		stop := time.Now()
-		fmt.Fprintln(zw, "I Stop:", stop.Format(time.RFC1123Z))
-		fmt.Fprintln(zw, "I Uptime:", time.Since(start))
+		s := stamp()
+		fmt.Fprintln(zw, s, "I Stop:", stop.Format(time.RFC1123Z))
+		fmt.Fprintln(zw, s, "I Uptime:", time.Since(start))
 		zw.Close()
 		fp.Close()
 		close(chLogDone)
 	}()
 
-	ticker := time.Tick(INTERVAL * time.Millisecond)
-
 	for {
 		select {
-		case t := <-ticker:
-			fmt.Fprintln(zw, t.Format("T 15:04:05"))
 		case line := <-chLog:
-			fmt.Fprintln(zw, line)
+			fmt.Fprintln(zw, stamp(), line)
 		case <-chQuit:
 			return
 		}
