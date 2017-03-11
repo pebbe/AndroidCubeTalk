@@ -111,12 +111,10 @@ func handleReq(req tRequest) {
 
 			if i != req.idx {
 
-				if marked {
-					if X*cube.towards.x+Y*cube.towards.y+Z*cube.towards.z > *opt_t {
-						chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
-						fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
-						marked = false
-					}
+				if marked && isLookingAt(idx, i) {
+					chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
+					fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
+					marked = false
 				}
 
 				l := users[i].lookat
