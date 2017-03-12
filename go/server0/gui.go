@@ -89,13 +89,73 @@ button .cE -text {recenter E} -command {go::recenter E}
 button .cF -text {recenter F} -command {go::recenter F}
 pack .cA .cB .cC .cD .cE .cF
 
+frame .nAB
+pack .nAB
+label .nAB.l -text {A sees B nod:}
+set nodAB 1
+entry .nAB.e -textvariable nodAB
+button .nAB.b -text {submit} -command {go::nod A B $nodAB}
+pack .nAB.l .nAB.e .nAB.b -side left
+
+frame .nAC
+pack .nAC
+label .nAC.l -text {A sees C nod:}
+set nodAC 1
+entry .nAC.e -textvariable nodAC
+button .nAC.b -text {submit} -command {go::nod A C $nodAC}
+pack .nAC.l .nAC.e .nAC.b -side left
+
+frame .nBA
+pack .nBA
+label .nBA.l -text {B sees A nod:}
+set nodBA 1
+entry .nBA.e -textvariable nodBA
+button .nBA.b -text {submit} -command {go::nod B A $nodBA}
+pack .nBA.l .nBA.e .nBA.b -side left
+
+frame .nBC
+pack .nBC
+label .nBC.l -text {B sees C nod:}
+set nodBC 1
+entry .nBC.e -textvariable nodBC
+button .nBC.b -text {submit} -command {go::nod B C $nodBC}
+pack .nBC.l .nBC.e .nBC.b -side left
+
+frame .nCA
+pack .nCA
+label .nCA.l -text {C sees A nod:}
+set nodCA 1
+entry .nCA.e -textvariable nodCA
+button .nCA.b -text {submit} -command {go::nod C A $nodCA}
+pack .nCA.l .nCA.e .nCA.b -side left
+
+frame .nCB
+pack .nCB
+label .nCB.l -text {C sees B nod:}
+set nodCB 1
+entry .nCB.e -textvariable nodCB
+button .nCB.b -text {submit} -command {go::nod C B $nodCB}
+pack .nCB.l .nCB.e .nCB.b -side left
+
 frame .r
 pack .r
 label .r.l -text {global nod enhance:}
 set nodvalue 1
 entry .r.e -textvariable nodvalue
-button .r.b -text {submit} -command {go::globalnod $nodvalue}
+button .r.b -text {submit} -command {setglobalnod $nodvalue}
 pack .r.l .r.e .r.b -side left
+
+proc setglobalnod args {
+    global nodAB nodAC nodBA nodBC nodCA nodCB
+    set nod [lindex $args 0]
+    set nodAB $nod
+    set nodAC $nod
+    set nodBA $nod
+    set nodBC $nod
+    set nodCA $nod
+    set nodCB $nod
+    go::globalnod $nod
+}
 
 # Don't use command exit, because that will kill Go as well
 button .q -text {exit} -command {destroy .}
@@ -109,6 +169,10 @@ pack .q -side left
 
 	x(tk.RegisterCommand("go::recenter", func(s string) {
 		chCmd <- "recenter " + s
+	}))
+
+	x(tk.RegisterCommand("go::nod", func(sees, seen, value string) {
+		chCmd <- "nod " + sees + " " + seen + " " + value
 	}))
 
 	x(tk.RegisterCommand("go::globalnod", func(s string) {

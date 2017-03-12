@@ -220,6 +220,25 @@ func handleCmd(cmd string) {
 			w(fmt.Errorf("Invalid user in command from GUI: %s", cmd))
 		}
 
+	case "nod":
+
+		if len(words) != 4 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		i, oki := labels[words[1]]
+		j, okj := labels[words[2]]
+		if !(oki && okj) {
+			w(fmt.Errorf("Invalid users in command from GUI: %s", cmd))
+			return
+		}
+		f, err := strconv.ParseFloat(words[3], 64)
+		if w(err) != nil {
+			return
+		}
+		setNod(i, j, f)
+
 	case "globalnod":
 
 		// Set amplification of nodding for all users, for all cubes they see
