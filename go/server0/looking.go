@@ -46,15 +46,15 @@ func showLooking(ch chan string, me int) {
 			if isLookingAt(i, me) {
 				if !lookMarked[me][i] {
 					lookMarked[me][i] = true
-					user.n[4]++
-					ch <- fmt.Sprintf("color %s %d %s\n", cube.uid, user.n[4], lookColor)
+					user.n[cntrColor]++
+					ch <- fmt.Sprintf("color %s %d %s\n", cube.uid, user.n[cntrColor], lookColor)
 					chLog <- fmt.Sprintf("I Begin %s looked at by %s", user.uid, cube.uid)
 				}
 			} else {
 				if lookMarked[me][i] {
 					lookMarked[me][i] = false
-					user.n[4]++
-					ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+					user.n[cntrColor]++
+					ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[cntrColor], cube.color.r, cube.color.g, cube.color.b)
 					chLog <- fmt.Sprintf("I End %s looked at by %s", user.uid, cube.uid)
 				}
 			}
@@ -66,15 +66,15 @@ func showLooking(ch chan string, me int) {
 			if isLookingAt(me, i) {
 				if !lookMarked[me][i] {
 					lookMarked[me][i] = true
-					user.n[4]++
-					ch <- fmt.Sprintf("color %s %d %s\n", cube.uid, user.n[4], lookColor)
+					user.n[cntrColor]++
+					ch <- fmt.Sprintf("color %s %d %s\n", cube.uid, user.n[cntrColor], lookColor)
 					chLog <- fmt.Sprintf("I Begin %s looking at %s", user.uid, cube.uid)
 				}
 			} else {
 				if lookMarked[me][i] {
 					lookMarked[me][i] = false
-					user.n[4]++
-					ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
+					user.n[cntrColor]++
+					ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[cntrColor], cube.color.r, cube.color.g, cube.color.b)
 					chLog <- fmt.Sprintf("I End %s looking at %s", user.uid, cube.uid)
 				}
 			}

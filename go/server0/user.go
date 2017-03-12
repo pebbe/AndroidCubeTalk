@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	NR_OF_COUNTERS = 9 // see counters in API
-)
-
 type tXYZ struct {
 	x, y, z float64
 }
@@ -38,7 +34,7 @@ type tUser struct {
 	lookat tXYZ     // direction the user is looking at, unit vector
 	roll   float64  // rotation around the direction of lookat, between -180 and 180
 	cubes  []*tCube // other cubes, where and how as seen by this user
-	n      [NR_OF_COUNTERS]uint64
+	n      [numberOfCtrs]uint64
 }
 
 var (

@@ -32,8 +32,8 @@ func resetFaces(user int) {
 
 func showFaces(ch chan string, idx int) {
 	for _, i := range setface[idx] {
-		users[idx].n[8]++
-		ch <- fmt.Sprintf("face %s %d %d\n", cubes[i].uid, users[idx].n[8], face[i])
+		users[idx].n[cntrFace]++
+		ch <- fmt.Sprintf("face %s %d %d\n", cubes[i].uid, users[idx].n[cntrFace], face[i])
 	}
 	setface[idx] = setface[idx][0:0]
 }

@@ -26,13 +26,13 @@ func setSize(w, h, d float64) {
 	cubesize[2] = d
 	for i := range users {
 		setsize[i] = true
-		users[i].n[6]++
+		users[i].n[cntrCubesize]++
 	}
 }
 
 func showSize(ch chan string, user int) {
 	if setsize[user] {
 		setsize[user] = false
-		ch <- fmt.Sprintf("cubesize %d %g %g %g\n", users[user].n[6], cubesize[0], cubesize[1], cubesize[2])
+		ch <- fmt.Sprintf("cubesize %d %g %g %g\n", users[user].n[cntrCubesize], cubesize[0], cubesize[1], cubesize[2])
 	}
 }

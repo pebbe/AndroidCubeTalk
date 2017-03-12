@@ -8,6 +8,19 @@ import (
 	"strings"
 )
 
+const (
+	cntrSelfZ = iota
+	cntrEnterExit
+	cntrMoveto
+	cntrLookat
+	cntrColor
+	cntrInfo
+	cntrCubesize
+	cntrHead
+	cntrFace
+	numberOfCtrs // this one MUST be last
+)
+
 func controller() {
 
 	initFaces()
@@ -42,7 +55,7 @@ func handleReq(req tRequest) {
 
 	case "reset":
 
-		for i := 0; i < NR_OF_COUNTERS; i++ {
+		for i := 0; i < numberOfCtrs; i++ {
 			user.n[i] = 0
 		}
 
@@ -92,21 +105,21 @@ func handleReq(req tRequest) {
 			fmt.Fprintf(&buf, "self %g\n", user.selfZ)
 			for i, cube := range user.cubes {
 				if i != req.idx {
-					user.n[1]++
-					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[1])
-					user.n[2]++
-					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[2], cube.pos.x, cube.pos.y, cube.pos.z)
-					user.n[4]++
-					fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[4], cube.color.r, cube.color.g, cube.color.b)
-					user.n[7]++
-					fmt.Fprintf(&buf, "head %s %d %d\n", cube.uid, user.n[7], cube.head)
+					user.n[cntrEnterExit]++
+					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
+					user.n[cntrMoveto]++
+					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
+					user.n[cntrColor]++
+					fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[cntrColor], cube.color.r, cube.color.g, cube.color.b)
+					user.n[cntrHead]++
+					fmt.Fprintf(&buf, "head %s %d %d\n", cube.uid, user.n[cntrHead], cube.head)
 				}
 			}
 			ch <- buf.String()
 			user.init = true
 		}
 
-		user.n[3]++
+		user.n[cntrLookat]++
 		for i, cube := range user.cubes {
 
 			if i != req.idx {
@@ -129,7 +142,7 @@ func handleReq(req tRequest) {
 
 				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 					cube.uid,
-					user.n[3],
+					user.n[cntrLookat],
 					math.Sin(rotH)*math.Cos(rotV),
 					math.Sin(rotV),
 					math.Cos(rotH)*math.Cos(rotV),
