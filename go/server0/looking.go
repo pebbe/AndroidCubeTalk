@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	markLookingAtMe   = true
-	markLookingAtThem = false
+	markLookingAtMe   = false
+	markLookingAtThem = true
 
 	lookColor = "1.0 0.7 0.0" // orange
 

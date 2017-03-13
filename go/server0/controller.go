@@ -55,11 +55,10 @@ func handleReq(req tRequest) {
 
 	case "reset":
 
-		for i := 0; i < numberOfCtrs; i++ {
-			user.n[i] = 0
-		}
+		// This commands tells the server that the client needs the setup.
+		// The setup is not sent now, but with the following 'lookat' command.
 
-		user.init = false
+		user.needSetup = true
 
 		resetSize(idx)
 
@@ -99,7 +98,7 @@ func handleReq(req tRequest) {
 
 		marked := len(words) == 6
 
-		if !user.init {
+		if user.needSetup {
 			// this must be in one batch to make sure that the order is preserved
 			var buf bytes.Buffer
 			fmt.Fprintf(&buf, "self %g\n", user.selfZ)
@@ -116,7 +115,7 @@ func handleReq(req tRequest) {
 				}
 			}
 			ch <- buf.String()
-			user.init = true
+			user.needSetup = false
 		}
 
 		user.n[cntrLookat]++
@@ -128,6 +127,7 @@ func handleReq(req tRequest) {
 					chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
 					fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
 					marked = false
+					clickHandle(idx, i)
 				}
 
 				l := users[i].lookat
@@ -159,6 +159,18 @@ func handleReq(req tRequest) {
 		showSize(ch, idx)
 
 		showFaces(ch, idx)
+
+	case "info":
+
+		if len(words) != 3 {
+			w(fmt.Errorf("Invalid number of arguments from %q: %s", req.uid, cmd))
+			return
+		}
+
+		chLog <- fmt.Sprintf("Choice by %s for %s: %s", req.uid, words[1], words[2])
+		fmt.Printf("Choice by %s for %s: %s\n", req.uid, words[1], words[2])
+
+		infoHandleChoice(idx, words[1], words[2])
 
 	default:
 

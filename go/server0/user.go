@@ -28,13 +28,13 @@ type tCube struct {
 }
 
 type tUser struct {
-	uid    string
-	init   bool     // init is done?
-	selfZ  float64  // position on z-axis
-	lookat tXYZ     // direction the user is looking at, unit vector
-	roll   float64  // rotation around the direction of lookat, between -180 and 180
-	cubes  []*tCube // other cubes, where and how as seen by this user
-	n      [numberOfCtrs]uint64
+	uid       string
+	needSetup bool
+	selfZ     float64  // position on z-axis
+	lookat    tXYZ     // direction the user is looking at, unit vector
+	roll      float64  // rotation around the direction of lookat, between -180 and 180
+	cubes     []*tCube // other cubes, where and how as seen by this user
+	n         [numberOfCtrs]uint64
 }
 
 var (
@@ -106,7 +106,6 @@ func makeUsers() {
 
 		user := tUser{
 			uid:    cube.uid,
-			init:   true,                                                     // done at first, but undone when user sends 'reset' command
 			selfZ:  math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
 			lookat: tXYZ{0, 0, -1},                                           // initially looking at y-axis
 			roll:   0,                                                        // initially no roll

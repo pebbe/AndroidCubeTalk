@@ -23,9 +23,8 @@ the text to be displayed.
 
 `join` must be the first request on every connection.
 
-`reset` must be used once after the app has started. This resets
-counters {n0}...{n8} on the server, and tells the server to send the
-initial layout of the other cubes.
+`reset` must be used once after the app has started. This tells the
+server to send the initial layout of the other cubes.
 
 `enter` must be used as reply before any other replies with the same `id`.
 
