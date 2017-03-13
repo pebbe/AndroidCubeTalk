@@ -38,7 +38,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private String[] ids;
     private CubeData[] cubes;
     private float syncSelfZ = 4;
-    private float selfZ = -4;
+    private float selfZ = 4;
     private long selfIdx = 0;
     private long syncInfoIdx = 0;
     private String syncInfoID = "";
@@ -250,7 +250,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             Matrix.setIdentityM(modelInfo, 0);
             Matrix.rotateM(modelInfo, 0, infoAngleH, 0, 1, 0);
             Matrix.rotateM(modelInfo, 0, infoAngleV, 1, 0, 0);
-            Matrix.translateM(modelInfo, 0, 0, 0, -selfZ);
+            Matrix.translateM(modelInfo, 0, 0, 0, -3);
             //Matrix.rotateM(modelInfo, 0, infoAngle, 0, 1, 0);
 
             infoChoice = 0;

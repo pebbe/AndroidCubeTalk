@@ -97,11 +97,19 @@ func handleReq(req tRequest) {
 		user.roll = roll
 
 		marked := len(words) == 6
+		if marked {
+			fmt.Printf("Mark %s -> %g %g %g    %.0f° right   %.0f° up\n",
+				req.uid,
+				X, Y, Z,
+				math.Atan2(X, -Z)/math.Pi*180,
+				math.Atan2(Y, math.Sqrt(X*X+Z*Z))/math.Pi*180)
+		}
 
 		if user.needSetup {
 			// this must be in one batch to make sure that the order is preserved
 			var buf bytes.Buffer
-			fmt.Fprintf(&buf, "self %g\n", user.selfZ)
+			user.n[cntrSelfZ]++
+			fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
 			for i, cube := range user.cubes {
 				if i != req.idx {
 					user.n[cntrEnterExit]++
@@ -148,10 +156,6 @@ func handleReq(req tRequest) {
 					math.Cos(rotH)*math.Cos(rotV),
 					users[i].roll)
 			}
-		}
-
-		if marked {
-			fmt.Printf("Mark %s -> %g %g %g\n", req.uid, X, Y, Z)
 		}
 
 		showLooking(ch, idx)
