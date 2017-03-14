@@ -41,7 +41,7 @@ func main() {
 
 	makeUsers()
 
-	for range users {
+	for _ = range users {
 		chOut = append(chOut, make(chan string, 100))
 	}
 

@@ -26,6 +26,8 @@ func infoMakeChoice(user int, infoID string, opt1, opt2 string, lines []string) 
 }
 
 func infoHandleChoice(user int, infoID string, choice string) {
-	time.Sleep(100 * time.Millisecond)
-	infoMakeNotice(user, []string{fmt.Sprintf("You clicked %s for %s", choice, infoID)})
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		infoMakeNotice(user, []string{fmt.Sprintf("You clicked %s for %s", choice, infoID)})
+	}()
 }

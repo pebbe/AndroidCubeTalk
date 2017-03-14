@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	// don't set both to true
 	markLookingAtMe   = false
 	markLookingAtThem = true
 

@@ -115,19 +115,19 @@ func makeUsers() {
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
 		Y0 := cube.pos.y
 
-		for j, cube := range cubes {
+		for j, cube2 := range cubes {
 			if i != j {
-				rotH := math.Atan2(cube.pos.x, cube.pos.z) - rotH0
-				l := math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z)
+				rotH := math.Atan2(cube2.pos.x, cube2.pos.z) - rotH0
+				l := math.Sqrt(cube2.pos.x*cube2.pos.x + cube2.pos.z*cube2.pos.z)
 				c := tCube{
-					uid:   cube.uid,
-					color: cube.color,
-					head:  cube.head,
-					face:  cube.face,
+					uid:   cube2.uid,
+					color: cube2.color,
+					head:  cube2.head,
+					face:  cube2.face,
 
 					pos: tXYZ{
 						l * math.Sin(rotH),
-						cube.pos.y - Y0,
+						cube2.pos.y - Y0,
 						l * math.Cos(rotH),
 					},
 
