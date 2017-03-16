@@ -18,8 +18,6 @@ type tRequest struct {
 }
 
 var (
-	port = ":8448"
-
 	chIn      = make(chan tRequest, 100)
 	chOut     = make([]chan string, 0)
 	chCmd     = make(chan string, 100)
@@ -28,6 +26,7 @@ var (
 	chQuit    = make(chan bool)
 
 	opt_d = flag.Float64("d", 4, "Unit distance to actual distance")
+	opt_p = flag.Int("p", 8448, "Port number")
 	opt_t = flag.Float64("t", .99, "Tolerance for looking at cube: cosine of angle")
 )
 
@@ -59,7 +58,7 @@ func main() {
 	go controller()
 
 	go func() {
-		ln, err := net.Listen("tcp", port)
+		ln, err := net.Listen("tcp", fmt.Sprint(":", *opt_p))
 		x(err)
 		for {
 			conn, err := ln.Accept()
