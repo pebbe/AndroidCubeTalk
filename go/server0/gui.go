@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -20,6 +21,14 @@ func gui() {
 	x(tk.Eval(`
 
 wm title . "` + tclquote(filepath.Base(os.Args[0])) + `"
+
+frame .cmd
+pack .cmd
+label .cmd.l -text {external command:}
+set runcmd {mplayer --quiet cling.mp3}
+entry .cmd.e -textvariable runcmd -width 40
+button .cmd.b -text {run} -command {go::runcommand $runcmd}
+pack .cmd.l .cmd.e .cmd.b -side left
 
 frame .sizes
 pack .sizes
@@ -162,6 +171,20 @@ button .q -text {exit} -command {destroy .}
 pack .q -side left
 
 `))
+
+	x(tk.RegisterCommand("go::runcommand", func(command string) {
+		fmt.Println("Command: run", command)
+		chLog <- "C run begin: " + command
+		args := strings.Fields(command)
+		cmd := exec.Command(args[0], args...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if w(err) != nil {
+			fmt.Println(err)
+		}
+		chLog <- "C run end: " + command
+	}))
 
 	x(tk.RegisterCommand("go::cubesize", func(w, h, d string) {
 		chCmd <- "cubesize " + w + " " + h + " " + d
