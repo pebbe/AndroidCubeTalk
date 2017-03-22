@@ -25,7 +25,7 @@ wm title . "` + tclquote(filepath.Base(os.Args[0])) + `"
 frame .cmd
 pack .cmd
 label .cmd.l -text {external command:}
-set runcmd {mplayer --quiet cling.mp3}
+set runcmd {mplayer -quiet cling.mp3}
 entry .cmd.e -textvariable runcmd -width 40
 button .cmd.b -text {run} -command {go::runcommand $runcmd}
 pack .cmd.l .cmd.e .cmd.b -side left
@@ -336,7 +336,7 @@ pack .q -side left
 		fmt.Println("Command: run", command)
 		chLog <- "C run begin: " + command
 		args := strings.Fields(command)
-		cmd := exec.Command(args[0], args...)
+		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
