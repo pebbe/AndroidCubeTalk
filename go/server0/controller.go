@@ -26,6 +26,8 @@ func controller() {
 	initFaces()
 	initSize()
 	initNodding()
+	initShaking()
+	initTilting()
 	initLooking()
 
 	for {
@@ -145,8 +147,11 @@ func handleReq(req tRequest) {
 
 				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
 				rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
+				tilt := users[i].roll
 
+				rotH = doShake(idx, i, rotH)
 				rotV = doNod(idx, i, rotV)
+				tilt = doTilt(idx, i, tilt)
 
 				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 					cube.uid,
@@ -154,7 +159,7 @@ func handleReq(req tRequest) {
 					math.Sin(rotH)*math.Cos(rotV),
 					math.Sin(rotV),
 					math.Cos(rotH)*math.Cos(rotV),
-					users[i].roll)
+					tilt)
 			}
 		}
 
@@ -281,6 +286,72 @@ func handleCmd(cmd string) {
 			return
 		}
 		setNodAll(f)
+
+	case "shake":
+
+		if len(words) != 4 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		i, oki := labels[words[1]]
+		j, okj := labels[words[2]]
+		if !(oki && okj) {
+			w(fmt.Errorf("Invalid users in command from GUI: %s", cmd))
+			return
+		}
+		f, err := strconv.ParseFloat(words[3], 64)
+		if w(err) != nil {
+			return
+		}
+		setShake(i, j, f)
+
+	case "globalshake":
+
+		// Set amplification of shaking for all users, for all cubes they see
+
+		if len(words) != 2 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+		f, err := strconv.ParseFloat(words[1], 64)
+		if w(err) != nil {
+			return
+		}
+		setShakeAll(f)
+
+	case "tilt":
+
+		if len(words) != 4 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		i, oki := labels[words[1]]
+		j, okj := labels[words[2]]
+		if !(oki && okj) {
+			w(fmt.Errorf("Invalid users in command from GUI: %s", cmd))
+			return
+		}
+		f, err := strconv.ParseFloat(words[3], 64)
+		if w(err) != nil {
+			return
+		}
+		setTilt(i, j, f)
+
+	case "globaltilt":
+
+		// Set amplification of tilting for all users, for all cubes they see
+
+		if len(words) != 2 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+		f, err := strconv.ParseFloat(words[1], 64)
+		if w(err) != nil {
+			return
+		}
+		setTiltAll(f)
 
 	default:
 
