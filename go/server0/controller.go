@@ -70,7 +70,7 @@ func handleReq(req tRequest) {
 
 	case "lookat":
 
-		if len(words) != 5 && len(words) != 6 {
+		if len(words) != 6 && len(words) != 7 {
 			w(fmt.Errorf("Invalid number of arguments from %q: %s", req.uid, cmd))
 			return
 		}
@@ -98,7 +98,7 @@ func handleReq(req tRequest) {
 		user.lookat.z = Z
 		user.roll = roll
 
-		marked := len(words) == 6
+		marked := len(words) == 7
 		if marked {
 			fmt.Printf("Mark %s -> %g %g %g    %.0f° right   %.0f° up\n",
 				req.uid,

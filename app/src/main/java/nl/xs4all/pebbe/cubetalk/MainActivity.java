@@ -1,12 +1,20 @@
 package nl.xs4all.pebbe.cubetalk;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 
 import com.google.vr.sdk.base.Eye;
 import com.google.vr.sdk.base.GvrActivity;
@@ -20,6 +28,8 @@ import java.net.Socket;
 import java.util.Locale;
 
 import javax.microedition.khronos.egl.EGLConfig;
+
+import ca.uol.aig.fftpack.RealDoubleFFT;
 
 public class MainActivity extends GvrActivity implements GvrView.StereoRenderer {
 
@@ -62,6 +72,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private boolean syncSetCubeSize = false;
     private float[] syncCubeSize;
     private float[] cubeSize;
+    private double syncAudioLevel = 0;
     private boolean syncErr = false;
     private String syncErrStr = "";
     final private Object settingsLock = new Object();
@@ -88,9 +99,53 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     private GvrView gvrView;
 
+    // audio
+    private RealDoubleFFT transformer;
+    int blockSize = 400;
+    RecordAudio recordTask;
+    boolean running = false;
+
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+
+    // Requesting permission to RECORD_AUDIO
+    private boolean permissionToRecordAccepted = false;
+    private String [] permissions = {Manifest.permission.RECORD_AUDIO};
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_RECORD_AUDIO_PERMISSION:
+                permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+        }
+        if (!permissionToRecordAccepted ) finish();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        running = true;
+        recordTask = new RecordAudio();
+        recordTask.execute();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        running = false;
+        recordTask.cancel(true);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        transformer = new RealDoubleFFT(blockSize);
 
         initializeGvrView();
 
@@ -424,7 +479,9 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 String replyID = "";
                 String replyText = "";
                 String replyMark = "";
+                double volume = 0;
                 synchronized (settingsLock) {
+                    volume = syncAudioLevel;
                     replyChoice = syncReplyChoice;
                     if (replyChoice) {
                         replyID = syncReplyChoiceID;
@@ -438,7 +495,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                 if (replyChoice) {
                     outputs[index].format(Locale.US, "info %s %s\n", replyID, replyText);
                 } else {
-                    outputs[index].format(Locale.US, "lookat %f %f %f %f %s\n", xi, yi, zi, ri, replyMark);
+                    outputs[index].format(Locale.US, "lookat %f %f %f %f %f %s\n", xi, yi, zi, ri, volume, replyMark);
                 }
 
                 boolean busy = true;
@@ -880,5 +937,58 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         // We are done using the bitmap so we should recycle it.
         bmp.recycle();
 
+    }
+
+    public class RecordAudio extends AsyncTask<Void, double[], Void> {
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+
+            try {
+                int frequency = 4000;
+                int channelConfiguration = AudioFormat.CHANNEL_IN_MONO;
+                int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+                int bufferSize = AudioRecord.getMinBufferSize(frequency,
+                        channelConfiguration, audioEncoding);
+
+                AudioRecord audioRecord = new AudioRecord(
+                        MediaRecorder.AudioSource.MIC,
+                        frequency,
+                        channelConfiguration,
+                        audioEncoding,
+                        bufferSize);
+
+                short[] buffer = new short[blockSize];
+                double[] toTransform = new double[blockSize];
+
+                audioRecord.startRecording();
+
+                while (running) {
+                    int bufferReadResult = audioRecord.read(buffer, 0, blockSize);
+                    for (int i = 0; i < blockSize && i < bufferReadResult; i++) {
+                        toTransform[i] = (double) buffer[i] / 32768.0;
+                    }
+                    transformer.ft(toTransform);
+                    publishProgress(toTransform);
+                }
+
+                audioRecord.stop();
+
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(double[]... toTransform) {
+            double sum = 0;
+            for (int i = 0; i < toTransform[0].length; i++) {
+                sum += Math.abs(toTransform[0][i]);
+            }
+            synchronized (settingsLock) {
+                syncAudioLevel = sum / toTransform[0].length;
+            }
+        }
     }
 }
