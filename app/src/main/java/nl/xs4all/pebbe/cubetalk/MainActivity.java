@@ -25,7 +25,9 @@ import com.google.vr.sdk.base.Viewport;
 import java.io.DataInputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Queue;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -79,6 +81,9 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     private boolean[] runnings;
     final private Object runningLock = new Object();
+
+    private Queue<String> logQueue = new LinkedList<String>();
+    final private Object logQueueLock = new Object();
 
     private int nrOfCubes;
 
@@ -475,27 +480,43 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                     }
                     runnings[index] = true;
                 }
-                boolean replyChoice = false;
-                String replyID = "";
-                String replyText = "";
-                String replyMark = "";
-                double volume = 0;
-                synchronized (settingsLock) {
-                    volume = syncAudioLevel;
-                    replyChoice = syncReplyChoice;
-                    if (replyChoice) {
-                        replyID = syncReplyChoiceID;
-                        replyText = syncReplyChoiceText;
-                        syncReplyChoice = false;
-                    } else if (syncMark) {
-                        syncMark = false;
-                        replyMark = "mark";
+
+                boolean haslog = false;
+                String logmsg;
+                synchronized (logQueueLock) {
+                    logmsg = logQueue.poll();
+                    if (logmsg != null) {
+                        haslog = true;
                     }
                 }
-                if (replyChoice) {
-                    outputs[index].format(Locale.US, "info %s %s\n", replyID, replyText);
+
+                if (haslog) {
+                    outputs[index].format(Locale.US, "log %s\n", logmsg);
                 } else {
-                    outputs[index].format(Locale.US, "lookat %f %f %f %f %f %s\n", xi, yi, zi, ri, volume, replyMark);
+
+                    boolean replyChoice = false;
+                    String replyID = "";
+                    String replyText = "";
+                    String replyMark = "";
+                    double volume = 0;
+                    synchronized (settingsLock) {
+                        volume = syncAudioLevel;
+                        replyChoice = syncReplyChoice;
+                        if (replyChoice) {
+                            replyID = syncReplyChoiceID;
+                            replyText = syncReplyChoiceText;
+                            syncReplyChoice = false;
+                        } else if (syncMark) {
+                            syncMark = false;
+                            replyMark = "mark";
+                        }
+                    }
+                    if (replyChoice) {
+                        outputs[index].format(Locale.US, "info %s %s\n", replyID, replyText);
+                    } else {
+                        outputs[index].format(Locale.US, "lookat %f %f %f %f %f %s\n", xi, yi, zi, ri, volume, replyMark);
+                    }
+
                 }
 
                 boolean busy = true;
@@ -958,6 +979,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                         audioEncoding,
                         bufferSize);
 
+                log("Audio sample rate " + audioRecord.getSampleRate() + ", frame size " + blockSize);
+
                 short[] buffer = new short[blockSize];
                 double[] toTransform = new double[blockSize];
 
@@ -974,6 +997,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
                 audioRecord.stop();
 
+                log("Audio stop");
+
             } catch (Throwable t) {
                 t.printStackTrace();
             }
@@ -989,6 +1014,12 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
             synchronized (settingsLock) {
                 syncAudioLevel = sum / toTransform[0].length;
             }
+        }
+    }
+
+    private void log(String s) {
+        synchronized (logQueueLock) {
+            logQueue.add(s);
         }
     }
 }

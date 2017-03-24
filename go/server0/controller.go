@@ -55,6 +55,10 @@ func handleReq(req tRequest) {
 	words := strings.Fields(cmd)
 	switch words[0] {
 
+	case "log":
+
+		fmt.Println("Log", req.uid+":", strings.Join(words[1:], " "))
+
 	case "reset":
 
 		// This commands tells the server that the client needs the setup.
