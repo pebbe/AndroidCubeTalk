@@ -106,9 +106,9 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
     // audio
     private RealDoubleFFT transformer;
-    int blockSize = 400;
+    int blockSize = 320;
     RecordAudio recordTask;
-    boolean running = false;
+    boolean audioRunning = false;
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
@@ -132,18 +132,24 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     protected void onResume() {
         super.onResume();
 
-        running = true;
+        log("onResume");
+
+        audioRunning = true;
         recordTask = new RecordAudio();
         recordTask.execute();
     }
 
+
     @Override
     protected void onPause() {
-        super.onPause();
 
-        running = false;
-        recordTask.cancel(true);
-    }
+        audioRunning = false;
+        //recordTask.cancel(true);
+
+        log("onPause");
+
+        super.onPause();
+   }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -964,9 +970,9 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         @Override
         protected Void doInBackground(Void... arg0) {
-
+            log("Audio start");
             try {
-                int frequency = 4000;
+                int frequency = 8000;
                 int channelConfiguration = AudioFormat.CHANNEL_IN_MONO;
                 int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
                 int bufferSize = AudioRecord.getMinBufferSize(frequency,
@@ -986,7 +992,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
                 audioRecord.startRecording();
 
-                while (running) {
+                while (audioRunning) {
                     int bufferReadResult = audioRecord.read(buffer, 0, blockSize);
                     for (int i = 0; i < blockSize && i < bufferReadResult; i++) {
                         toTransform[i] = (double) buffer[i] / 32768.0;
@@ -997,11 +1003,10 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
                 audioRecord.stop();
 
-                log("Audio stop");
-
             } catch (Throwable t) {
-                t.printStackTrace();
+                log("Audio error: " + t.toString());
             }
+            log("Audio stop");
             return null;
         }
 
