@@ -76,6 +76,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private float[] cubeSize;
     private double syncAudioLevel = 0;
     private boolean syncUseAudio = false;
+    private long syncUseAudioIdx = 0;
     private boolean syncErr = false;
     private String syncErrStr = "";
     final private Object settingsLock = new Object();
@@ -947,15 +948,24 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         return "";
     }
 
-    // audio on|off
+    // audio {n8} on|off
     private String setAudio(String[] parts) {
-        if (parts.length == 2) {
-            boolean useAudio = parts[1].equals("on");
+        if (parts.length == 3) {
+            boolean useAudio = parts[2].equals("on");
+            long n = 0;
+            try {
+                n = Integer.parseInt(parts[1]);
+            } catch (Exception e) {
+                return e.toString();
+            }
             synchronized (settingsLock) {
-                if (useAudio == syncUseAudio) {
-                    return "";
+                if (n >= syncUseAudioIdx) {
+                    syncUseAudioIdx = n;
+                    if (useAudio == syncUseAudio) {
+                        return "";
+                    }
+                    syncUseAudio = useAudio;
                 }
-                syncUseAudio = useAudio;
             }
             if (useAudio) {
                 audioRunning = true;

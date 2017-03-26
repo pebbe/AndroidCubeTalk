@@ -9,7 +9,7 @@
 `join` {id}          | `.`
 `quit`               | nothing, the connection is terminated
 `reset`              | `.`
-`lookat` {x} {y} {z} {roll} {audio} [mark] <BR> `info` {infoID} {choice} <BR> `log` any text | `self` {n0} {z} <BR> `audio` `on`/`off` <BR> `recenter` <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} {roll} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `info` {n5} {nr of lines} <BR> {lines} <BR> `info` {n5} {nr of lines} {infoID} {choice1} {choice2} <BR> {lines} <BR> `cubesize` {n6} {width} {height} {depth} <BR> `head` {id} {n7} {number} <BR> `face` {id} {n8} {number} <BR> `.`
+`lookat` {x} {y} {z} {roll} {audio} [mark] <BR> `info` {infoID} {choice} <BR> `log` any text | `self` {n0} {z} <BR> `recenter` <BR> `enter` {id} {n1} <BR> `exit` {id} {n1} <BR> `moveto` {id} {n2} {x} {y} {z} <BR> `lookat` {id} {n3} {x} {y} {z} {roll} <BR> `color` {id} {n4} {red} {green} {blue} <BR> `info` {n5} {nr of lines} <BR> {lines} <BR> `info` {n5} {nr of lines} {infoID} {choice1} {choice2} <BR> {lines} <BR> `cubesize` {n6} {width} {height} {depth} <BR> `head` {id} {n7} {number} <BR> `face` {id} {n8} {number} <BR> `audio` {n9} `on`/`off` <BR> `.`
 
 All requests are a single line. All responses to `lookat` and `info` can
 be multiple lines. The last line is a single dot, except for the `quit`
@@ -33,7 +33,7 @@ unhidden with `enter`.
 
 All parameters are a single word, except for {lines}.
 
-{n0}...{n8} are separate counters. The client should ignore any reply
+{n0}...{n9} are separate counters. The client should ignore any reply
 command that has a counter value lower than already seen for that
 particular counter. This is in case replies don't get processed in the
 order they were sent.

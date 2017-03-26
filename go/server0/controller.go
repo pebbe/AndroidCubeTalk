@@ -18,6 +18,7 @@ const (
 	cntrCubesize
 	cntrHead
 	cntrFace
+	cntrAudio
 	numberOfCtrs // this one MUST be last
 )
 
@@ -96,6 +97,15 @@ func handleReq(req tRequest) {
 			return
 		}
 
+		if useAudio {
+			/*
+				audio, err := strconv.ParseFloat(words[5], 64)
+				if w(err) != nil {
+					return
+				}
+			*/
+		}
+
 		// only one goroutine modifying these variables, so no sync needed
 		user.lookat.x = X
 		user.lookat.y = Y
@@ -116,8 +126,9 @@ func handleReq(req tRequest) {
 			var buf bytes.Buffer
 			user.n[cntrSelfZ]++
 			fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
-			if *opt_a == "on" {
-				fmt.Fprintln(&buf, "audio on")
+			if useAudio {
+				user.n[cntrAudio]++
+				fmt.Fprintf(&buf, "audio %d on\n", user.n[cntrAudio])
 			}
 			for i, cube := range user.cubes {
 				if i != req.idx {
