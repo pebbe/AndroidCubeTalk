@@ -25,6 +25,7 @@ var (
 	chLogDone = make(chan bool)
 	chQuit    = make(chan bool)
 
+	opt_a = flag.String("a", "off", "Audio: on|off")
 	opt_d = flag.Float64("d", 4, "Unit distance to actual distance")
 	opt_p = flag.Int("p", 8448, "Port number")
 	opt_t = flag.Float64("t", .99, "Tolerance for looking at cube: cosine of angle")

@@ -116,6 +116,9 @@ func handleReq(req tRequest) {
 			var buf bytes.Buffer
 			user.n[cntrSelfZ]++
 			fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
+			if *opt_a == "on" {
+				fmt.Fprintln(&buf, "audio on")
+			}
 			for i, cube := range user.cubes {
 				if i != req.idx {
 					user.n[cntrEnterExit]++

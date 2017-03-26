@@ -75,6 +75,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
     private float[] syncCubeSize;
     private float[] cubeSize;
     private double syncAudioLevel = 0;
+    private boolean syncUseAudio = false;
     private boolean syncErr = false;
     private String syncErrStr = "";
     final private Object settingsLock = new Object();
@@ -134,9 +135,15 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
 
         log("onResume");
 
-        audioRunning = true;
-        recordTask = new RecordAudio();
-        recordTask.execute();
+        boolean useAudio;
+        synchronized (settingsLock) {
+            useAudio = syncUseAudio;
+        }
+        if (useAudio) {
+            audioRunning = true;
+            recordTask = new RecordAudio();
+            recordTask.execute();
+        }
     }
 
 
@@ -576,6 +583,8 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                             e = setCubesize(parts, index);
                         } else if (parts[0].equals("recenter")) {
                             gvrView.recenterHeadTracker();
+                        } else if (parts[0].equals("audio")) {
+                            e = setAudio(parts);
                         }
                     }
                     if (!e.equals("")) {
@@ -937,6 +946,28 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         }
         return "";
     }
+
+    // audio on|off
+    private String setAudio(String[] parts) {
+        if (parts.length == 2) {
+            boolean useAudio = parts[1].equals("on");
+            synchronized (settingsLock) {
+                if (useAudio == syncUseAudio) {
+                    return "";
+                }
+                syncUseAudio = useAudio;
+            }
+            if (useAudio) {
+                audioRunning = true;
+                recordTask = new RecordAudio();
+                recordTask.execute();
+            } else {
+                audioRunning = false;
+            }
+        }
+        return "";
+    }
+
 
     private int getHeadTexture(int h) {
         return Util.TEXTURE_HEAD0 + h % (Util.TEXTURE_FACE0 - Util.TEXTURE_HEAD0);
