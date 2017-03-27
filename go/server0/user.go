@@ -43,44 +43,23 @@ var (
 		tCube{
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
-			color: tRGB{1, 1, 1}, // white
+			color: tRGB{1, .6, .6}, // red
 			head:  0,
 			face:  0,
 		},
 		tCube{
 			uid:   "B",
-			pos:   tXYZ{1, 0, 0},
-			color: tRGB{1, 1, 0}, // yellow
+			pos:   tXYZ{.866, 0, -.5},
+			color: tRGB{.4, .7, 1}, // blue
 			head:  1,
 			face:  1,
 		},
 		tCube{
 			uid:   "C",
-			pos:   tXYZ{0, 0, -1},
+			pos:   tXYZ{-.866, 0, -.5},
 			color: tRGB{0, .6, 0}, // green
 			head:  2,
 			face:  2,
-		},
-		tCube{
-			uid:   "D",
-			pos:   tXYZ{-1, 0, 0},
-			color: tRGB{.4, .7, 1}, // blue
-			head:  3,
-			face:  3,
-		},
-		tCube{
-			uid:   "E",
-			pos:   tXYZ{.5, .75, -1},
-			color: tRGB{1, .6, .6}, // red
-			head:  4,
-			face:  4,
-		},
-		tCube{
-			uid:   "F",
-			pos:   tXYZ{-.5, -.75, 1},
-			color: tRGB{.5, .5, .5}, // grey
-			head:  5,
-			face:  5,
 		},
 	}
 

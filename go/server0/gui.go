@@ -66,37 +66,10 @@ entry .fC.e  -textvariable fCval
 button .fC.b -text {submit} -command {go::face C $fCval}
 pack .fC.l .fC.e .fC.b -side left
 
-set fDval ` + fmt.Sprint(cubes[3].face) + `
-frame .fD
-pack .fD
-label .fD.l -text {face D:}
-entry .fD.e  -textvariable fDval
-button .fD.b -text {submit} -command {go::face D $fDval}
-pack .fD.l .fD.e .fD.b -side left
-
-set fEval ` + fmt.Sprint(cubes[4].face) + `
-frame .fE
-pack .fE
-label .fE.l -text {face E:}
-entry .fE.e  -textvariable fEval
-button .fE.b -text {submit} -command {go::face E $fEval}
-pack .fE.l .fE.e .fE.b -side left
-
-set fFval ` + fmt.Sprint(cubes[5].face) + `
-frame .fF
-pack .fF
-label .fF.l -text {face F:}
-entry .fF.e  -textvariable fFval
-button .fF.b -text {submit} -command {go::face F $fFval}
-pack .fF.l .fF.e .fF.b -side left
-
 button .cA -text {recenter A} -command {go::recenter A}
 button .cB -text {recenter B} -command {go::recenter B}
 button .cC -text {recenter C} -command {go::recenter C}
-button .cD -text {recenter D} -command {go::recenter D}
-button .cE -text {recenter E} -command {go::recenter E}
-button .cF -text {recenter F} -command {go::recenter F}
-pack .cA .cB .cC .cD .cE .cF
+pack .cA .cB .cC
 
 frame .nst
 pack .nst
