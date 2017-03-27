@@ -371,6 +371,22 @@ func handleCmd(cmd string) {
 		}
 		setTiltAll(f)
 
+	case "turn":
+
+		if len(words) != 5 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		i, oki := labels[words[1]]
+		j, okj := labels[words[2]]
+		k, okk := labels[words[3]]
+		if !(oki && okj && okk) {
+			w(fmt.Errorf("Invalid users in command from GUI: %s", cmd))
+			return
+		}
+		setTurn(i, j, k, words[4] == "on")
+
 	default:
 
 		w(fmt.Errorf("Invalid command from GUI: %s", cmd))

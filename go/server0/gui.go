@@ -298,6 +298,36 @@ proc setglobaltilt args {
 }
 
 
+frame .t
+pack .t
+
+frame .t.a -relief groove -borderwidth 3 -padx 4 -pady 4
+frame .t.b -relief groove -borderwidth 3 -padx 4 -pady 4
+frame .t.c -relief groove -borderwidth 3 -padx 4 -pady 4
+
+pack .t.a .t.b .t.c -side left -padx 4 -pady 4
+
+set abc off
+set acb off
+label .t.a.title -text {A sees...}
+checkbutton .t.a.bc -variable abc -onvalue on -offvalue off -text {B looking at C} -command {go::turn A B C $abc}
+checkbutton .t.a.cb -variable acb -onvalue on -offvalue off -text {C looking at B} -command {go::turn A C B $acb}
+pack .t.a.title .t.a.bc .t.a.cb
+
+set bac off
+set bca off
+label .t.b.title -text {B sees...}
+checkbutton .t.b.ac -variable bac -onvalue on -offvalue off -text {A looking at C} -command {go::turn B A C $bac}
+checkbutton .t.b.ca -variable bca -onvalue on -offvalue off -text {C looking at A} -command {go::turn B C A $bca}
+pack .t.b.title .t.b.ac .t.b.ca
+
+set cab off
+set cba off
+label .t.c.title -text {C sees...}
+checkbutton .t.c.ab -variable cab -onvalue on -offvalue off -text {A looking at B} -command {go::turn C A B $cab}
+checkbutton .t.c.ba -variable cba -onvalue on -offvalue off -text {B looking at A} -command {go::turn C B A $cba}
+pack .t.c.title .t.c.ab .t.c.ba
+
 
 # Don't use command exit, because that will kill Go as well
 button .q -text {exit} -command {destroy .}
@@ -349,6 +379,10 @@ pack .q -side left
 
 	x(tk.RegisterCommand("go::globaltilt", func(s string) {
 		chCmd <- "globaltilt " + s
+	}))
+
+	x(tk.RegisterCommand("go::turn", func(sees, seen, seeing, val string) {
+		chCmd <- "turn " + sees + " " + seen + " " + seeing + " " + val
 	}))
 
 	x(tk.RegisterCommand("go::face", func(uid, idx string) {
