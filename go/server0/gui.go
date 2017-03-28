@@ -328,6 +328,8 @@ checkbutton .t.c.ab -variable cab -onvalue on -offvalue off -text {A looking at 
 checkbutton .t.c.ba -variable cba -onvalue on -offvalue off -text {B looking at A} -command {go::turn C B A $cba}
 pack .t.c.title .t.c.ab .t.c.ba
 
+button .start -text { START } -command { go::start ; destroy .start } -background {#00a000} -foreground white
+pack .start -expand yes -fill x -padx 32 -pady 8
 
 # Don't use command exit, because that will kill Go as well
 button .q -text {exit} -command {destroy .}
@@ -347,6 +349,10 @@ pack .q -side left
 			fmt.Println(err)
 		}
 		chLog <- "C run end: " + command
+	}))
+
+	x(tk.RegisterCommand("go::start", func() {
+		chCmd <- "start"
 	}))
 
 	x(tk.RegisterCommand("go::cubesize", func(w, h, d string) {

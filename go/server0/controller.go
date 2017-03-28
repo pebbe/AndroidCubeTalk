@@ -22,6 +22,10 @@ const (
 	numberOfCtrs // this one MUST be last
 )
 
+var (
+	started = false
+)
+
 func controller() {
 
 	initFaces()
@@ -74,6 +78,10 @@ func handleReq(req tRequest) {
 		resetFaces(idx)
 
 	case "lookat":
+
+		if !started {
+			return
+		}
 
 		if len(words) != 6 && len(words) != 7 {
 			w(fmt.Errorf("Invalid number of arguments from %q: %s", req.uid, cmd))
@@ -215,6 +223,10 @@ func handleCmd(cmd string) {
 
 	words := strings.Fields(cmd)
 	switch words[0] {
+
+	case "start":
+
+		started = true
 
 	case "face":
 

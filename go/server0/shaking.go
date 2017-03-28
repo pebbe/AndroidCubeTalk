@@ -5,11 +5,11 @@ import (
 )
 
 type shakePar struct {
-	shake   float64
-	prevIn  float64
-	prevOut float64
-	useTurn bool
-	turn    float64
+	shake    float64
+	prevTrue float64
+	prevFake float64
+	useTurn  bool
+	turn     float64
 }
 
 var (
@@ -48,23 +48,23 @@ func setTurn(me, them, to int, useTurn bool) {
 	}
 }
 
-func doShake(me, them int, currentIn float64) float64 {
+func doShake(me, them int, currentTrue float64) float64 {
 
 	// do immediate shake
-	dr := (currentIn - shaking[me][them].prevIn)
+	dr := (currentTrue - shaking[me][them].prevTrue)
 	for dr > math.Pi {
 		dr -= 2 * math.Pi
 	}
 	for dr < -math.Pi {
 		dr += 2 * math.Pi
 	}
-	currentOut := shaking[me][them].prevOut + dr*shaking[me][them].shake
+	currentFake := shaking[me][them].prevFake + dr*shaking[me][them].shake
 
 	// delay to actual angle
 	if shaking[me][them].useTurn {
-		dr = shaking[me][them].turn - currentOut
+		dr = shaking[me][them].turn - currentFake
 	} else {
-		dr = currentIn - currentOut
+		dr = currentTrue - currentFake
 	}
 	for dr > math.Pi {
 		dr -= 2 * math.Pi
@@ -72,10 +72,10 @@ func doShake(me, them int, currentIn float64) float64 {
 	for dr < -math.Pi {
 		dr += 2 * math.Pi
 	}
-	currentOut += dr * .1
+	currentFake += dr * .1
 
-	shaking[me][them].prevOut = currentOut
-	shaking[me][them].prevIn = currentIn
+	shaking[me][them].prevFake = currentFake
+	shaking[me][them].prevTrue = currentTrue
 
-	return currentOut
+	return currentFake
 }
