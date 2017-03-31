@@ -25,7 +25,7 @@ wm title . "` + tclquote(filepath.Base(os.Args[0])) + `"
 frame .cmd
 pack .cmd
 label .cmd.l -text {external command:}
-set runcmd {mplayer -quiet cling.mp3}
+set runcmd {mplayer -quiet ` + filepath.Join(filepath.Dir(os.Args[0]), "cling.mp3") + `}
 entry .cmd.e -textvariable runcmd -width 40
 button .cmd.b -text {run} -command {go::runcommand $runcmd}
 pack .cmd.l .cmd.e .cmd.b -side left
