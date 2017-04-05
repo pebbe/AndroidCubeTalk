@@ -39,12 +39,14 @@ func setShake(me, them int, shake float64) {
 }
 
 func setTurn(me, them, to int, useTurn bool) {
-	shaking[me][them].useTurn = useTurn
-	if useTurn {
-		u := users[me]
-		shaking[me][them].turn = math.Atan2(
-			u.cubes[to].pos.x-u.cubes[them].pos.x,
-			u.cubes[to].pos.z-u.cubes[them].pos.z)
+	u := users[me]
+	if u.cubes[to] != nil && u.cubes[them] != nil {
+		shaking[me][them].useTurn = useTurn
+		if useTurn {
+			shaking[me][them].turn = math.Atan2(
+				u.cubes[to].pos.x-u.cubes[them].pos.x,
+				u.cubes[to].pos.z-u.cubes[them].pos.z)
+		}
 	}
 }
 

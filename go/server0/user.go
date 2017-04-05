@@ -23,16 +23,19 @@ type tCube struct {
 	forward tXYZ // neutral forward direction, unit vector, with y=0
 	towards tXYZ // unit vector from user to this cube
 	color   tRGB
-	head    int // texture number
-	face    int // texture number
+	head    int      // texture number
+	face    int      // texture number
+	sees    []string // names of other cubes seen by this one
+	isRobot bool
 }
 
 type tUser struct {
 	uid       string
 	needSetup bool
-	selfZ     float64  // position on z-axis
-	lookat    tXYZ     // direction the user is looking at, unit vector
-	roll      float64  // rotation around the direction of lookat, between -180 and 180
+	selfZ     float64 // position on z-axis
+	lookat    tXYZ    // direction the user is looking at, unit vector
+	roll      float64 // rotation around the direction of lookat, between -180 and 180
+	isRobot   bool
 	cubes     []*tCube // other cubes, where and how as seen by this user
 	n         [numberOfCtrs]uint64
 }
@@ -43,23 +46,27 @@ var (
 		tCube{
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
-			color: tRGB{1, .6, .6}, // red
+			color: tRGB{.6, .6, .6},
 			head:  0,
 			face:  0,
+			sees:  []string{"B", "C"},
 		},
 		tCube{
 			uid:   "B",
 			pos:   tXYZ{.866, 0, -.5},
-			color: tRGB{.4, .7, 1}, // blue
-			head:  1,
-			face:  1,
+			color: tRGB{.6, .6, 6},
+			head:  0,
+			face:  0,
+			sees:  []string{"A", "C"},
 		},
 		tCube{
-			uid:   "C",
-			pos:   tXYZ{-.866, 0, -.5},
-			color: tRGB{0, .6, 0}, // green
-			head:  2,
-			face:  2,
+			uid:     "C",
+			pos:     tXYZ{-.866, 0, -.5},
+			color:   tRGB{.6, .6, .6},
+			head:    0,
+			face:    0,
+			sees:    []string{"A", "B"},
+			isRobot: true,
 		},
 	}
 
@@ -77,53 +84,56 @@ func makeUsers() {
 
 	labelstrings := make([]string, 0)
 
+	for i, cube := range cubes {
+		labels[cube.uid] = i
+		labelstrings = append(labelstrings, fmt.Sprint(cube.uid, ":", i))
+	}
+
 	// create layout for each user from list of cubes
 	for i, cube := range cubes {
 
-		labels[cube.uid] = i
-		labelstrings = append(labelstrings, fmt.Sprint(cube.uid, ":", i))
-
 		user := tUser{
-			uid:    cube.uid,
-			selfZ:  math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
-			lookat: tXYZ{0, 0, -1},                                           // initially looking at y-axis
-			roll:   0,                                                        // initially no roll
-			cubes:  make([]*tCube, len(cubes)),
+			uid:     cube.uid,
+			selfZ:   math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
+			lookat:  tXYZ{0, 0, -1},                                           // initially looking at y-axis
+			roll:    0,                                                        // initially no roll
+			cubes:   make([]*tCube, len(cubes)),
+			isRobot: cube.isRobot,
 		}
 
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
 		Y0 := cube.pos.y
 
-		for j, cube2 := range cubes {
-			if i != j {
-				rotH := math.Atan2(cube2.pos.x, cube2.pos.z) - rotH0
-				l := math.Sqrt(cube2.pos.x*cube2.pos.x + cube2.pos.z*cube2.pos.z)
-				c := tCube{
-					uid:   cube2.uid,
-					color: cube2.color,
-					head:  cube2.head,
-					face:  cube2.face,
+		for _, see := range cube.sees {
+			j := labels[see]
+			cube2 := cubes[j]
+			rotH := math.Atan2(cube2.pos.x, cube2.pos.z) - rotH0
+			l := math.Sqrt(cube2.pos.x*cube2.pos.x + cube2.pos.z*cube2.pos.z)
+			c := tCube{
+				uid:   cube2.uid,
+				color: cube2.color,
+				head:  cube2.head,
+				face:  cube2.face,
 
-					pos: tXYZ{
-						l * math.Sin(rotH),
-						cube2.pos.y - Y0,
-						l * math.Cos(rotH),
-					},
+				pos: tXYZ{
+					l * math.Sin(rotH),
+					cube2.pos.y - Y0,
+					l * math.Cos(rotH),
+				},
 
-					// assumption: each cube is looking horizontally towards its own y-axis
-					forward: tXYZ{
-						-math.Sin(rotH),
-						0,
-						-math.Cos(rotH),
-					},
-				}
-				dx := c.pos.x
-				dy := c.pos.y
-				dz := c.pos.z - user.selfZ
-				ln := math.Sqrt(dx*dx + dy*dy + dz*dz)
-				c.towards = tXYZ{dx / ln, dy / ln, dz / ln}
-				user.cubes[j] = &c
+				// assumption: each cube is looking horizontally towards its own y-axis
+				forward: tXYZ{
+					-math.Sin(rotH),
+					0,
+					-math.Cos(rotH),
+				},
 			}
+			dx := c.pos.x
+			dy := c.pos.y
+			dz := c.pos.z - user.selfZ
+			ln := math.Sqrt(dx*dx + dy*dy + dz*dz)
+			c.towards = tXYZ{dx / ln, dy / ln, dz / ln}
+			user.cubes[j] = &c
 		}
 
 		users[i] = &user

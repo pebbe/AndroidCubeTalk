@@ -15,6 +15,9 @@ var (
 )
 
 func isLookingAt(from, to int) bool {
+	if users[from].cubes == nil {
+		return false
+	}
 	v := users[from].lookat
 	w := users[from].cubes[to].towards
 	return v.x*w.x+v.y*w.y+v.z*w.z > *opt_t
@@ -38,7 +41,7 @@ func showLooking(ch chan string, me int) {
 	user := users[me]
 
 	for i, cube := range user.cubes {
-		if i == me {
+		if cube == nil {
 			continue
 		}
 

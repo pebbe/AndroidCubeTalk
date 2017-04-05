@@ -138,8 +138,8 @@ func handleReq(req tRequest) {
 				user.n[cntrAudio]++
 				fmt.Fprintf(&buf, "audio %d on\n", user.n[cntrAudio])
 			}
-			for i, cube := range user.cubes {
-				if i != req.idx {
+			for _, cube := range user.cubes {
+				if cube != nil {
 					user.n[cntrEnterExit]++
 					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
 					user.n[cntrMoveto]++
@@ -157,7 +157,7 @@ func handleReq(req tRequest) {
 		user.n[cntrLookat]++
 		for i, cube := range user.cubes {
 
-			if i != req.idx {
+			if cube != nil {
 
 				if marked && isLookingAt(idx, i) {
 					chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
