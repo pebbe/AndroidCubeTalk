@@ -12,6 +12,7 @@ var (
 	lookColor = "1.0 0.7 0.0" // orange
 
 	lookMarked [][]bool
+	useLookAt  bool
 )
 
 func isLookingAt(from, to int) bool {
@@ -28,6 +29,7 @@ func initLooking() {
 	for i := range users {
 		lookMarked[i] = make([]bool, len(users))
 	}
+	useLookAt = true
 }
 
 func resetLooking(user int) {
@@ -37,6 +39,10 @@ func resetLooking(user int) {
 }
 
 func showLooking(ch chan string, me int) {
+
+	if !useLookAt {
+		return
+	}
 
 	user := users[me]
 

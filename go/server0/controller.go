@@ -26,14 +26,19 @@ var (
 	started = false
 )
 
-func controller() {
-
+func restart() {
+	initRobot()
 	initFaces()
 	initSize()
 	initNodding()
 	initShaking()
 	initTilting()
 	initLooking()
+}
+
+func controller() {
+
+	restart()
 
 	for {
 		select {
@@ -189,6 +194,8 @@ func handleReq(req tRequest) {
 			}
 		}
 
+		doRobot(idx)
+
 		showLooking(ch, idx)
 
 		showSize(ch, idx)
@@ -227,6 +234,40 @@ func handleCmd(cmd string) {
 	case "start":
 
 		started = true
+
+	case "restart":
+
+		makeUsers()
+		restart()
+		for idx, user := range users {
+			user.needSetup = true
+			resetSize(idx)
+			resetLooking(idx)
+			resetFaces(idx)
+		}
+
+		started = true
+
+	case "stop":
+
+		started = false
+
+	case "hideall":
+
+		for i, user := range users {
+			ch := chOut[i]
+			for _, cube := range user.cubes {
+				if cube == nil {
+					continue
+				}
+				user.n[cntrEnterExit]++
+				select {
+				case ch <- fmt.Sprintf("exit %s %d\n", cube.uid, user.n[cntrEnterExit]):
+				default:
+					// drop if channel is full
+				}
+			}
+		}
 
 	case "face":
 
@@ -278,7 +319,7 @@ func handleCmd(cmd string) {
 			select {
 			case chOut[idx] <- "recenter\n":
 			default:
-				// channel is full and nobody is reading from the channel
+				// drop if channel is full
 			}
 		} else {
 			w(fmt.Errorf("Invalid user in command from GUI: %s", cmd))

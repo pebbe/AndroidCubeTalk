@@ -560,6 +560,11 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
                     String e = "";
                     String[] parts = response.trim().split("[ \t]+");
                     if (parts.length > 0) {
+                        /*
+                        if (!(parts[0].equals("lookat") || parts[0].equals("."))) {
+                            log(response);
+                        }
+                        */
                         if (parts[0].equals(".")) {
                             busy = false;
                         } else if (parts[0].equals("lookat")) {

@@ -5,7 +5,9 @@ import (
 
 	"fmt"
 	"math"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 type tXYZ struct {
@@ -41,45 +43,68 @@ type tUser struct {
 }
 
 var (
+	lightgrey = tRGB{.8, .8, .8}
+	red       = tRGB{1, 0, 0}
+
 	// layout is built from this list
 	cubes = []tCube{
 		tCube{
-			uid:   "A",
-			pos:   tXYZ{0, 0, 1},
-			color: tRGB{.8, .8, .8},
-			head:  0,
-			face:  0,
-			sees:  []string{"B", "C"},
+			uid:     "A",
+			pos:     tXYZ{0, 0, 1},
+			color:   lightgrey,
+			head:    0,
+			face:    0,
+			sees:    []string{"B", "C"},
+			isRobot: true,
 		},
 		tCube{
 			uid:   "B",
 			pos:   tXYZ{.866, 0, -.5},
-			color: tRGB{.8, .8, .8},
+			color: lightgrey,
 			head:  0,
 			face:  0,
 			sees:  []string{"A", "C"},
 		},
 		tCube{
-			uid:     "C",
-			pos:     tXYZ{-.866, 0, -.5},
-			color:   tRGB{.8, .8, .8},
-			head:    9,
-			face:    0,
-			sees:    []string{"A", "B"},
-			isRobot: true,
+			uid:   "C",
+			pos:   tXYZ{-.866, 0, -.5},
+			color: lightgrey,
+			head:  0,
+			face:  0,
+			sees:  []string{"A", "B"},
 		},
 	}
 
 	users  = make([]*tUser, len(cubes))
 	labels = make(map[string]int)
+
+	firstMakeUsers = true
 )
 
 func makeUsers() {
 
-	for i := range cubes {
-		cubes[i].pos.x *= *opt_d
-		cubes[i].pos.y *= *opt_d
-		cubes[i].pos.z *= *opt_d
+	oldCounters := make(map[string][numberOfCtrs]uint64)
+
+	if firstMakeUsers {
+		firstMakeUsers = false
+		for i := range cubes {
+			cubes[i].pos.x *= *opt_d
+			cubes[i].pos.y *= *opt_d
+			cubes[i].pos.z *= *opt_d
+		}
+	} else {
+		for _, user := range users {
+			oldCounters[user.uid] = user.n
+		}
+	}
+
+	if hasRobots() {
+		// shuffle positions
+		rand.Seed(time.Now().UnixNano())
+		for i := len(cubes) - 1; i > 0; i-- {
+			j := rand.Intn(i + 1)
+			cubes[i].pos, cubes[j].pos = cubes[j].pos, cubes[i].pos
+		}
 	}
 
 	labelstrings := make([]string, 0)
@@ -99,6 +124,7 @@ func makeUsers() {
 			roll:    0,                                                        // initially no roll
 			cubes:   make([]*tCube, len(cubes)),
 			isRobot: cube.isRobot,
+			n:       oldCounters[cube.uid],
 		}
 
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
@@ -127,6 +153,8 @@ func makeUsers() {
 					0,
 					-math.Cos(rotH),
 				},
+
+				isRobot: cube2.isRobot,
 			}
 			dx := c.pos.x
 			dy := c.pos.y
