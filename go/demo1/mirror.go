@@ -112,6 +112,8 @@ func handleRequests() {
 		a := strings.Fields(req.req)
 		if len(a) > 0 {
 			switch a[0] {
+			case "log":
+				fmt.Println("Log:", strings.Join(a, " "))
 			case "reset":
 				if len(a) == 1 {
 					delete(users, req.id)
@@ -119,7 +121,7 @@ func handleRequests() {
 					invalid(req, errArgs)
 				}
 			case "lookat":
-				if len(a) == 5 {
+				if len(a) == 6 || len(a) == 7 {
 					u, ok := users[req.id]
 					if !ok {
 						u = 0
