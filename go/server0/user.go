@@ -46,7 +46,7 @@ var (
 		tCube{
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
-			color: tRGB{.6, .6, .6},
+			color: tRGB{.8, .8, .8},
 			head:  0,
 			face:  0,
 			sees:  []string{"B", "C"},
@@ -54,7 +54,7 @@ var (
 		tCube{
 			uid:   "B",
 			pos:   tXYZ{.866, 0, -.5},
-			color: tRGB{.6, .6, 6},
+			color: tRGB{.8, .8, .8},
 			head:  0,
 			face:  0,
 			sees:  []string{"A", "C"},
@@ -62,8 +62,8 @@ var (
 		tCube{
 			uid:     "C",
 			pos:     tXYZ{-.866, 0, -.5},
-			color:   tRGB{.6, .6, .6},
-			head:    0,
+			color:   tRGB{.8, .8, .8},
+			head:    9,
 			face:    0,
 			sees:    []string{"A", "B"},
 			isRobot: true,

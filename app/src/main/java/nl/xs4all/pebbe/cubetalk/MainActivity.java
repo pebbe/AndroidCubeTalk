@@ -269,7 +269,7 @@ public class MainActivity extends GvrActivity implements GvrView.StereoRenderer 
         setBitMap(R.raw.face1j, Util.TEXTURE_FACE9);
 
         kubus = new Kubus();
-        wereld = new Wereld(this, texturenames[Util.TEXTURE_WORLD]);
+        wereld = new Wereld(this, texturenames[Util.TEXTURE_WORLD], texturenames[Util.TEXTURE_TOP], texturenames[Util.TEXTURE_BOTTOM]);
     }
 
     @Override

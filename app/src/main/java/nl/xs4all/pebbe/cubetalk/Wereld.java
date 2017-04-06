@@ -22,7 +22,9 @@ public class Wereld {
     private final int mProgram;
     private int mPositionHandle;
     private int mMatrixHandle;
-    private int texture;
+    private int texPanorama;
+    private int texTop;
+    private int texBottom;
 
     private final String vertexShaderCode = "" +
             "uniform mat4 uMVPMatrix;" +
@@ -35,13 +37,17 @@ public class Wereld {
 
     private final String fragmentShaderCode = "" +
             "precision mediump float;" +
-            "uniform sampler2D texture;" +
+            "uniform sampler2D panorama;" +
+            "uniform sampler2D top;" +
+            "uniform sampler2D bottom;" +
             "varying vec2 pos;" +
             "void main() {" +
-            "    if (pos[1] > 1.05 || pos[1] < -1.05) {" +
-            "        gl_FragColor = texture2D(texture, vec2(sin(pos[0]) * cos(pos[1]) / 2.0 + 0.5, cos(pos[0]) * cos(pos[1]) / 2.0 + 0.5));" +
+            "    if (pos[1] > 1.05) {" +
+            "        gl_FragColor = texture2D(top, vec2(sin(pos[0]) * cos(pos[1]) / 0.49757 / 2.0 + 0.5, cos(pos[0]) * cos(pos[1]) / 0.49757 / 2.0 + 0.5));" +
+            "    } else if (pos[1] < -1.05) {" +
+            "        gl_FragColor = texture2D(bottom, vec2(sin(pos[0]) * cos(pos[1]) / 0.49757 / 2.0 + 0.5, cos(pos[0]) * cos(pos[1]) / 0.49757 / 2.0 + 0.5));" +
             "    } else { " +
-            "        gl_FragColor = texture2D(texture, vec2(pos[0] / 3.14159265 / 2.0 + 0.5, - pos[1] / 1.5707963 / 2.0 - 0.5));" +
+            "        gl_FragColor = texture2D(panorama, vec2(pos[0] / 3.14159265 / 2.0 + 0.5, - pos[1] / 1.05 / 2.0 - 0.5));" +
             "    }" +
             "}";
 
@@ -60,8 +66,10 @@ public class Wereld {
         vertexCount += 3;
     }
 
-    public Wereld(Context context, int texturename) {
-        texture = texturename;
+    public Wereld(Context context, int panorama, int top, int bottom) {
+        texPanorama = panorama;
+        texTop = top;
+        texBottom = bottom;
         vertexCount = 0;
 
         for (int lat = 90; lat > -90; lat -= STEP) {
@@ -106,12 +114,12 @@ public class Wereld {
         Util.checkGlError("glLinkProgram");
 
         // Temporary create a bitmap
-        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.raw.wereld);
+        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.raw.panorama);
 
         // Bind texture to texturename
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         Util.checkGlError("glActiveTexture");
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, panorama);
         Util.checkGlError("glBindTexture");
 
         // Load the bitmap into the bound texture.
@@ -120,6 +128,40 @@ public class Wereld {
 
         // We are done using the bitmap so we should recycle it.
         bmp.recycle();
+
+
+        // Temporary create a bitmap
+        bmp = BitmapFactory.decodeResource(context.getResources(), R.raw.top);
+
+        // Bind texture to texturename
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        Util.checkGlError("glActiveTexture");
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, top);
+        Util.checkGlError("glBindTexture");
+
+        // Load the bitmap into the bound texture.
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        Util.checkGlError("texImage2D");
+
+        // We are done using the bitmap so we should recycle it.
+        bmp.recycle();
+
+        // Temporary create a bitmap
+        bmp = BitmapFactory.decodeResource(context.getResources(), R.raw.bottom);
+
+        // Bind texture to texturename
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        Util.checkGlError("glActiveTexture");
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, bottom);
+        Util.checkGlError("glBindTexture");
+
+        // Load the bitmap into the bound texture.
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+        Util.checkGlError("texImage2D");
+
+        // We are done using the bitmap so we should recycle it.
+        bmp.recycle();
+
     }
 
     public void draw(float[] mvpMatrix) {
@@ -130,7 +172,7 @@ public class Wereld {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         Util.checkGlError("glActiveTexture");
 
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texPanorama);
         Util.checkGlError("glBindTexture");
 
         // Set filtering
@@ -139,6 +181,35 @@ public class Wereld {
 
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         Util.checkGlError("glTexParameteri");
+
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        Util.checkGlError("glActiveTexture");
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texTop);
+        Util.checkGlError("glBindTexture");
+
+        // Set filtering
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        Util.checkGlError("glTexParameteri");
+
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        Util.checkGlError("glTexParameteri");
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
+        Util.checkGlError("glActiveTexture");
+
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texBottom);
+        Util.checkGlError("glBindTexture");
+
+        // Set filtering
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        Util.checkGlError("glTexParameteri");
+
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        Util.checkGlError("glTexParameteri");
+
+
 
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "position");
         Util.checkGlError("glGetAttribLocation vPosition");
@@ -157,10 +228,24 @@ public class Wereld {
 
 
         // Get handle to textures locations
-        int mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "texture");
+        int mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "panorama");
         Util.checkGlError("glGetUniformLocation texture");
         // Set the sampler texture unit to 0, where we have saved the texture.
         GLES20.glUniform1i(mSamplerLoc, 0);
+        Util.checkGlError("glUniform1i mSamplerLoc");
+
+        // Get handle to textures locations
+        mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "top");
+        Util.checkGlError("glGetUniformLocation texture");
+        // Set the sampler texture unit to 0, where we have saved the texture.
+        GLES20.glUniform1i(mSamplerLoc, 1);
+        Util.checkGlError("glUniform1i mSamplerLoc");
+
+        // Get handle to textures locations
+        mSamplerLoc = GLES20.glGetUniformLocation(mProgram, "bottom");
+        Util.checkGlError("glGetUniformLocation texture");
+        // Set the sampler texture unit to 0, where we have saved the texture.
+        GLES20.glUniform1i(mSamplerLoc, 2);
         Util.checkGlError("glUniform1i mSamplerLoc");
 
         // Draw
