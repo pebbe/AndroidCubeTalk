@@ -28,16 +28,14 @@ type tCube struct {
 	head    int      // texture number
 	face    int      // texture number
 	sees    []string // names of other cubes seen by this one
-	isRobot bool
 }
 
 type tUser struct {
 	uid       string
 	needSetup bool
-	selfZ     float64 // position on z-axis
-	lookat    tXYZ    // direction the user is looking at, unit vector
-	roll      float64 // rotation around the direction of lookat, between -180 and 180
-	isRobot   bool
+	selfZ     float64  // position on z-axis
+	lookat    tXYZ     // direction the user is looking at, unit vector
+	roll      float64  // rotation around the direction of lookat, between -180 and 180
 	cubes     []*tCube // other cubes, where and how as seen by this user
 	n         [numberOfCtrs]uint64
 }
@@ -49,13 +47,12 @@ var (
 	// layout is built from this list
 	cubes = []tCube{
 		tCube{
-			uid:     "A",
-			pos:     tXYZ{0, 0, 1},
-			color:   lightgrey,
-			head:    0,
-			face:    0,
-			sees:    []string{"B", "C"},
-			isRobot: true,
+			uid:   "A",
+			pos:   tXYZ{0, 0, 1},
+			color: lightgrey,
+			head:  0,
+			face:  0,
+			sees:  []string{"B", "C"},
 		},
 		tCube{
 			uid:   "B",
@@ -98,7 +95,7 @@ func makeUsers() {
 		}
 	}
 
-	if hasRobots() {
+	if hasRobot() {
 		// shuffle positions
 		rand.Seed(time.Now().UnixNano())
 		for i := len(cubes) - 1; i > 0; i-- {
@@ -118,13 +115,12 @@ func makeUsers() {
 	for i, cube := range cubes {
 
 		user := tUser{
-			uid:     cube.uid,
-			selfZ:   math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
-			lookat:  tXYZ{0, 0, -1},                                           // initially looking at y-axis
-			roll:    0,                                                        // initially no roll
-			cubes:   make([]*tCube, len(cubes)),
-			isRobot: cube.isRobot,
-			n:       oldCounters[cube.uid],
+			uid:    cube.uid,
+			selfZ:  math.Sqrt(cube.pos.x*cube.pos.x + cube.pos.z*cube.pos.z), // horizontal distance from y-axis
+			lookat: tXYZ{0, 0, -1},                                           // initially looking at y-axis
+			roll:   0,                                                        // initially no roll
+			cubes:  make([]*tCube, len(cubes)),
+			n:      oldCounters[cube.uid],
 		}
 
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
@@ -153,8 +149,6 @@ func makeUsers() {
 					0,
 					-math.Cos(rotH),
 				},
-
-				isRobot: cube2.isRobot,
 			}
 			dx := c.pos.x
 			dy := c.pos.y
