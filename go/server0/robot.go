@@ -41,6 +41,7 @@ func doRobot(me int) {
 		return
 	}
 
+	// who is 'me' looking at?
 	rLookAt[me] = -1
 	found := -1
 	for them, cube := range users[me].cubes {
@@ -51,25 +52,32 @@ func doRobot(me int) {
 		}
 	}
 	if found < 0 {
+		// 'me' one not looking at any cube -> skip test
+		return
+	}
+
+	// test
+	counts := make([]int, len(users))
+	found = -1
+	for _, i := range rLookAt {
+		if i >= 0 {
+			counts[i]++
+			if counts[i] == len(cubes)-1 {
+				found = i
+				break
+			}
+		}
+	}
+	if found < 0 {
 		rCurrent = -1
 		return
 	}
 
 	if found != rCurrent {
-		count := 0
-		for _, i := range rLookAt {
-			if i == found {
-				count++
-			}
-		}
-		if count == len(cubes)-1 {
-			rCurrent = found
-			robotThen = time.Now().Add(robotDelay)
-		}
+		rCurrent = found
+		robotThen = time.Now().Add(robotDelay)
 	}
-	if rCurrent < 0 {
-		return
-	}
+
 	if time.Now().Before(robotThen) {
 		return
 	}
