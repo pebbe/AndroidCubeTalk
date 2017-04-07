@@ -50,7 +50,7 @@ func doRobot(me int) {
 			break
 		}
 	}
-	if found < -1 {
+	if found < 0 {
 		rCurrent = -1
 		return
 	}

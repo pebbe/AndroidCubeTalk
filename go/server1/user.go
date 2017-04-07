@@ -23,9 +23,8 @@ type tCube struct {
 	forward tXYZ // neutral forward direction, unit vector, with y=0
 	towards tXYZ // unit vector from user to this cube
 	color   tRGB
-	head    int      // texture number
-	face    int      // texture number
-	sees    []string // names of other cubes seen by this one
+	head    int // texture number
+	face    int // texture number
 }
 
 type tUser struct {
@@ -47,7 +46,6 @@ var (
 			color: tRGB{1, .6, .6}, // red
 			head:  0,
 			face:  0,
-			sees:  []string{"B", "C"},
 		},
 		tCube{
 			uid:   "B",
@@ -55,7 +53,6 @@ var (
 			color: tRGB{0, .6, 0}, // green
 			head:  1,
 			face:  1,
-			sees:  []string{"A", "C"},
 		},
 		tCube{
 			uid:   "C",
@@ -63,7 +60,6 @@ var (
 			color: tRGB{.4, .7, 1}, // blue
 			head:  2,
 			face:  2,
-			sees:  []string{"A", "B"},
 		},
 	}
 
@@ -100,9 +96,7 @@ func makeUsers() {
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
 		Y0 := cube.pos.y
 
-		for _, see := range cube.sees {
-			j := labels[see]
-			cube2 := cubes[j]
+		for j, cube2 := range cubes {
 			rotH := math.Atan2(cube2.pos.x, cube2.pos.z) - rotH0
 			l := math.Sqrt(cube2.pos.x*cube2.pos.x + cube2.pos.z*cube2.pos.z)
 			c := tCube{

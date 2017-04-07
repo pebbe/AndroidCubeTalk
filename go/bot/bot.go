@@ -22,24 +22,8 @@ func main() {
 		return
 	}
 
-	go func() {
-		i := 0
-		for {
-			fmt.Fprintln(os.Stderr, "I AM ROBOT")
-			os.Stderr.Sync()
-
-			time.Sleep(20 * time.Second)
-
-			i++
-			if i == 3 {
-				fmt.Fprintln(os.Stderr, "CRASH!")
-				os.Stderr.Sync()
-				os.Exit(1)
-			}
-		}
-	}()
-
 	r := 0.0
+	i := 0
 	for {
 
 		r += .1
@@ -53,6 +37,13 @@ func main() {
 			if scanner.Text() == "." {
 				break
 			}
+		}
+
+		i++
+		if i == 500 {
+			fmt.Fprintln(os.Stderr, "I AM ROBOT")
+			os.Stderr.Sync()
+			i = 0
 		}
 
 		time.Sleep(40 * time.Millisecond)
