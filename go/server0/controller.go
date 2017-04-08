@@ -28,6 +28,7 @@ var (
 
 func controller() {
 
+	initAudio()
 	initFaces()
 	initHeads()
 	initColors()
@@ -77,6 +78,7 @@ func handleReq(req tRequest) {
 
 		user.needSetup = true
 
+		resetAudio(idx)
 		resetSize(idx)
 		resetLooking(idx)
 		resetFaces(idx)
@@ -111,13 +113,12 @@ func handleReq(req tRequest) {
 			return
 		}
 
-		if useAudio {
-			/*
-				audio, err := strconv.ParseFloat(words[5], 64)
-				if w(err) != nil {
-					return
-				}
-			*/
+		var audio float64
+		if withAudio {
+			audio, err = strconv.ParseFloat(words[5], 64)
+			if w(err) != nil {
+				return
+			}
 		}
 
 		// only one goroutine modifying these variables, so no sync needed
@@ -125,6 +126,10 @@ func handleReq(req tRequest) {
 		user.lookat.y = Y
 		user.lookat.z = Z
 		user.roll = roll
+		user.audio = audio
+
+		doAudio(idx)
+		doRobot(idx)
 
 		marked := len(words) == 7
 		if marked {
@@ -140,10 +145,6 @@ func handleReq(req tRequest) {
 			var buf bytes.Buffer
 			user.n[cntrSelfZ]++
 			fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
-			if useAudio {
-				user.n[cntrAudio]++
-				fmt.Fprintf(&buf, "audio %d on\n", user.n[cntrAudio])
-			}
 			for _, cube := range user.cubes {
 				if cube != nil {
 					user.n[cntrEnterExit]++
@@ -191,7 +192,7 @@ func handleReq(req tRequest) {
 			}
 		}
 
-		doRobot(idx)
+		showAudio(ch, idx)
 
 		showLooking(ch, idx)
 
@@ -238,17 +239,17 @@ func handleCmd(cmd string, verbose bool) {
 
 		started = true
 
-	case "restart":
+	case "stop":
+
+		started = false
+
+	case "restart": // called by robot handler: should update layout
 
 		makeUsers()
 		for _, user := range users {
 			user.needSetup = true
 		}
 		started = true
-
-	case "stop":
-
-		started = false
 
 	case "hideall":
 

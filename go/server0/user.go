@@ -27,9 +27,10 @@ type tCube struct {
 type tUser struct {
 	uid       string
 	needSetup bool
-	selfZ     float64  // position on z-axis
-	lookat    tXYZ     // direction the user is looking at, unit vector
-	roll      float64  // rotation around the direction of lookat, between -180 and 180
+	selfZ     float64 // position on z-axis
+	lookat    tXYZ    // direction the user is looking at, unit vector
+	roll      float64 // rotation around the direction of lookat, between -180 and 180
+	audio     float64
 	cubes     []*tCube // other cubes, where and how as seen by this user
 	n         [numberOfCtrs]uint64
 }
@@ -41,15 +42,15 @@ var (
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
 			color: lightblue,
-			head:  0,
-			face:  0,
+			head:  1,
+			face:  1,
 		},
 		tCube{
 			uid:   "B",
 			pos:   tXYZ{.866, 0, -.5},
 			color: lightblue,
-			head:  0,
-			face:  0,
+			head:  1,
+			face:  1,
 		},
 		// If there is a robot, it must be last, or masking will go terribly wrong
 		// If masking is used, the value for 'pos' is ignored
@@ -57,8 +58,8 @@ var (
 			uid:   "BOT",
 			pos:   tXYZ{-.866, 0, -.5},
 			color: lightblue,
-			head:  0,
-			face:  0,
+			head:  1,
+			face:  1,
 		},
 	}
 
@@ -96,8 +97,8 @@ func makeUsers() {
 		}
 	}
 
-	// If robot: layout shuffling
-	// If using masking: redo 'sees'
+	// If with robot: layout shuffling
+	// If with masking: redo 'sees'
 	robotUserSetup()
 
 	labelstrings := make([]string, 0)

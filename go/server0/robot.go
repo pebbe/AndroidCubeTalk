@@ -14,24 +14,16 @@ var (
 	robotResult = 3 * time.Second // time to display result
 	robotBlank  = 1 * time.Second // time to blank after result before reset
 
-	masked         = -1
-	robotUID       string
-	useRobot       bool
-	useRobotMasked bool
-	robotThen      time.Time
-	robotRunning   bool
-	rLookAt        = make([]int, len(cubes))
-	rCurrent       int
+	masked       = -1
+	robotUID     string
+	robotThen    time.Time
+	robotRunning bool
+	rLookAt      = make([]int, len(cubes))
+	rCurrent     int
 )
 
-func hasRobot() bool {
-	return *opt_b != ""
-}
-
 func initRobot() {
-	useRobot = hasRobot()
-	if useRobot {
-		useRobotMasked = (*opt_m == "on")
+	if withRobot {
 		for i := 0; i < len(cubes); i++ {
 			rLookAt[i] = -1
 		}
@@ -42,13 +34,13 @@ func initRobot() {
 
 func robotUserSetup() {
 
-	if !hasRobot() {
+	if !withRobot {
 		return
 	}
 
 	rand.Seed(time.Now().UnixNano())
 
-	if *opt_m != "on" {
+	if !withMasking {
 		// shuffle positions
 		for i := len(cubes) - 1; i > 0; i-- {
 			j := rand.Intn(i + 1)
@@ -97,7 +89,7 @@ func robotUserSetup() {
 }
 
 func doRobot(me int) {
-	if !useRobot || robotRunning || me == masked {
+	if !withRobot || robotRunning || me == masked {
 		return
 	}
 
@@ -113,7 +105,7 @@ func doRobot(me int) {
 	}
 
 	required := len(cubes) - 1
-	if *opt_m == "on" {
+	if withMasking {
 		required--
 	}
 
@@ -149,7 +141,7 @@ func doRobot(me int) {
 	if users[rCurrent].uid == robotUID {
 		a = "Correct"
 	}
-	chLog <- fmt.Sprintf("I Users selected %s: %s", users[rCurrent].uid, a)
+	chLog <- fmt.Sprintf("B Users selected %s: %s", users[rCurrent].uid, a)
 	fmt.Printf("Users selected %s: %s\n", users[rCurrent].uid, a)
 
 	rcube := cubes[len(cubes)-1]
@@ -193,13 +185,14 @@ func doRobot(me int) {
 }
 
 func runRobot() {
-	if !hasRobot() {
+	if !withRobot {
 		return
 	}
 
 	chLog <- "B Starting robot: " + *opt_b
 
-	cmd := exec.Command(*opt_b)
+	words := strings.Fields(*opt_b)
+	cmd := exec.Command(words[0], words[1:]...)
 	stdin, err := cmd.StdinPipe()
 	x(err)
 	stdout, err := cmd.StdoutPipe()
@@ -270,6 +263,6 @@ func runRobot() {
 
 	w(cmd.Wait())
 
-	chLog <- "B Robot " + *opt_b + " has stopped"
-	fmt.Println("Robot", *opt_b, "has stopped")
+	chLog <- "B Stopped robot: " + *opt_b
+	fmt.Println("Stopped robot:", *opt_b)
 }
