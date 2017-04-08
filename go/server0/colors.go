@@ -13,13 +13,15 @@ var (
 	color    []tRGB
 
 	colornames = map[string]tRGB{
-		"white":     {1, 1, 1},
-		"red":       {1, 0, 0},
-		"green":     {0, 1, 0},
-		"blue":      {0, 0, 1},
-		"lightgrey": {.7, .7, .7},
-		"lightblue": {.5, .5, 1},
-		"lightred":  {1, .5, .5},
+		"white":      {1, 1, 1},
+		"grey":       {.5, .5, .5},
+		"red":        {.8, 0, 0},
+		"green":      {0, .6, 0},
+		"blue":       {0, 0, 1},
+		"lightgrey":  {.7, .7, .7},
+		"lightred":   {1, .5, .5},
+		"lightgreen": {.4, 1, .4},
+		"lightblue":  {.6, .6, 1},
 	}
 )
 
