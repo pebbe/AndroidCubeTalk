@@ -61,15 +61,14 @@ pack .fB.l .fB.e .fB.b -side left
 set fCval ` + fmt.Sprint(cubes[2].face) + `
 frame .fC
 pack .fC
-label .fC.l -text {face C:}
+label .fC.l -text {face BOT:}
 entry .fC.e  -textvariable fCval
-button .fC.b -text {submit} -command {go::face C $fCval}
+button .fC.b -text {submit} -command {go::face BOT $fCval}
 pack .fC.l .fC.e .fC.b -side left
 
 button .cA -text {recenter A} -command {go::recenter A}
 button .cB -text {recenter B} -command {go::recenter B}
-button .cC -text {recenter C} -command {go::recenter C}
-pack .cA .cB .cC
+pack .cA .cB
 
 frame .nst
 pack .nst
@@ -99,10 +98,10 @@ pack .nst.nod.nAB.l .nst.nod.nAB.e .nst.nod.nAB.b -side left
 
 frame .nst.nod.nAC
 pack .nst.nod.nAC
-label .nst.nod.nAC.l -text {A sees C:}
+label .nst.nod.nAC.l -text {A sees BOT:}
 set nodAC 1
 entry .nst.nod.nAC.e -textvariable nodAC
-button .nst.nod.nAC.b -text {submit} -command {go::nod A C $nodAC}
+button .nst.nod.nAC.b -text {submit} -command {go::nod A BOT $nodAC}
 pack .nst.nod.nAC.l .nst.nod.nAC.e .nst.nod.nAC.b -side left
 
 frame .nst.nod.nBA
@@ -115,26 +114,26 @@ pack .nst.nod.nBA.l .nst.nod.nBA.e .nst.nod.nBA.b -side left
 
 frame .nst.nod.nBC
 pack .nst.nod.nBC
-label .nst.nod.nBC.l -text {B sees C:}
+label .nst.nod.nBC.l -text {B sees BOT:}
 set nodBC 1
 entry .nst.nod.nBC.e -textvariable nodBC
-button .nst.nod.nBC.b -text {submit} -command {go::nod B C $nodBC}
+button .nst.nod.nBC.b -text {submit} -command {go::nod B BOT $nodBC}
 pack .nst.nod.nBC.l .nst.nod.nBC.e .nst.nod.nBC.b -side left
 
 frame .nst.nod.nCA
 pack .nst.nod.nCA
-label .nst.nod.nCA.l -text {C sees A:}
+label .nst.nod.nCA.l -text {BOT sees A:}
 set nodCA 1
 entry .nst.nod.nCA.e -textvariable nodCA
-button .nst.nod.nCA.b -text {submit} -command {go::nod C A $nodCA}
+button .nst.nod.nCA.b -text {submit} -command {go::nod BOT A $nodCA}
 pack .nst.nod.nCA.l .nst.nod.nCA.e .nst.nod.nCA.b -side left
 
 frame .nst.nod.nCB
 pack .nst.nod.nCB
-label .nst.nod.nCB.l -text {C sees B:}
+label .nst.nod.nCB.l -text {BOT sees B:}
 set nodCB 1
 entry .nst.nod.nCB.e -textvariable nodCB
-button .nst.nod.nCB.b -text {submit} -command {go::nod C B $nodCB}
+button .nst.nod.nCB.b -text {submit} -command {go::nod BOT B $nodCB}
 pack .nst.nod.nCB.l .nst.nod.nCB.e .nst.nod.nCB.b -side left
 
 frame .nst.nod.r
@@ -169,10 +168,10 @@ pack .nst.shake.nAB.l .nst.shake.nAB.e .nst.shake.nAB.b -side left
 
 frame .nst.shake.nAC
 pack .nst.shake.nAC
-label .nst.shake.nAC.l -text {A sees C:}
+label .nst.shake.nAC.l -text {A sees BOT:}
 set shakeAC 1
 entry .nst.shake.nAC.e -textvariable shakeAC
-button .nst.shake.nAC.b -text {submit} -command {go::shake A C $shakeAC}
+button .nst.shake.nAC.b -text {submit} -command {go::shake A BOT $shakeAC}
 pack .nst.shake.nAC.l .nst.shake.nAC.e .nst.shake.nAC.b -side left
 
 frame .nst.shake.nBA
@@ -185,26 +184,26 @@ pack .nst.shake.nBA.l .nst.shake.nBA.e .nst.shake.nBA.b -side left
 
 frame .nst.shake.nBC
 pack .nst.shake.nBC
-label .nst.shake.nBC.l -text {B sees C:}
+label .nst.shake.nBC.l -text {B sees BOT:}
 set shakeBC 1
 entry .nst.shake.nBC.e -textvariable shakeBC
-button .nst.shake.nBC.b -text {submit} -command {go::shake B C $shakeBC}
+button .nst.shake.nBC.b -text {submit} -command {go::shake B BOT $shakeBC}
 pack .nst.shake.nBC.l .nst.shake.nBC.e .nst.shake.nBC.b -side left
 
 frame .nst.shake.nCA
 pack .nst.shake.nCA
-label .nst.shake.nCA.l -text {C sees A:}
+label .nst.shake.nCA.l -text {BOT sees A:}
 set shakeCA 1
 entry .nst.shake.nCA.e -textvariable shakeCA
-button .nst.shake.nCA.b -text {submit} -command {go::shake C A $shakeCA}
+button .nst.shake.nCA.b -text {submit} -command {go::shake BOT A $shakeCA}
 pack .nst.shake.nCA.l .nst.shake.nCA.e .nst.shake.nCA.b -side left
 
 frame .nst.shake.nCB
 pack .nst.shake.nCB
-label .nst.shake.nCB.l -text {C sees B:}
+label .nst.shake.nCB.l -text {BOT sees B:}
 set shakeCB 1
 entry .nst.shake.nCB.e -textvariable shakeCB
-button .nst.shake.nCB.b -text {submit} -command {go::shake C B $shakeCB}
+button .nst.shake.nCB.b -text {submit} -command {go::shake BOT B $shakeCB}
 pack .nst.shake.nCB.l .nst.shake.nCB.e .nst.shake.nCB.b -side left
 
 frame .nst.shake.r
@@ -239,10 +238,10 @@ pack .nst.tilt.nAB.l .nst.tilt.nAB.e .nst.tilt.nAB.b -side left
 
 frame .nst.tilt.nAC
 pack .nst.tilt.nAC
-label .nst.tilt.nAC.l -text {A sees C:}
+label .nst.tilt.nAC.l -text {A sees BOT:}
 set tiltAC 1
 entry .nst.tilt.nAC.e -textvariable tiltAC
-button .nst.tilt.nAC.b -text {submit} -command {go::tilt A C $tiltAC}
+button .nst.tilt.nAC.b -text {submit} -command {go::tilt A BOT $tiltAC}
 pack .nst.tilt.nAC.l .nst.tilt.nAC.e .nst.tilt.nAC.b -side left
 
 frame .nst.tilt.nBA
@@ -255,26 +254,26 @@ pack .nst.tilt.nBA.l .nst.tilt.nBA.e .nst.tilt.nBA.b -side left
 
 frame .nst.tilt.nBC
 pack .nst.tilt.nBC
-label .nst.tilt.nBC.l -text {B sees C:}
+label .nst.tilt.nBC.l -text {B sees BOT:}
 set tiltBC 1
 entry .nst.tilt.nBC.e -textvariable tiltBC
-button .nst.tilt.nBC.b -text {submit} -command {go::tilt B C $tiltBC}
+button .nst.tilt.nBC.b -text {submit} -command {go::tilt B BOT $tiltBC}
 pack .nst.tilt.nBC.l .nst.tilt.nBC.e .nst.tilt.nBC.b -side left
 
 frame .nst.tilt.nCA
 pack .nst.tilt.nCA
-label .nst.tilt.nCA.l -text {C sees A:}
+label .nst.tilt.nCA.l -text {BOT sees A:}
 set tiltCA 1
 entry .nst.tilt.nCA.e -textvariable tiltCA
-button .nst.tilt.nCA.b -text {submit} -command {go::tilt C A $tiltCA}
+button .nst.tilt.nCA.b -text {submit} -command {go::tilt BOT A $tiltCA}
 pack .nst.tilt.nCA.l .nst.tilt.nCA.e .nst.tilt.nCA.b -side left
 
 frame .nst.tilt.nCB
 pack .nst.tilt.nCB
-label .nst.tilt.nCB.l -text {C sees B:}
+label .nst.tilt.nCB.l -text {BOT sees B:}
 set tiltCB 1
 entry .nst.tilt.nCB.e -textvariable tiltCB
-button .nst.tilt.nCB.b -text {submit} -command {go::tilt C B $tiltCB}
+button .nst.tilt.nCB.b -text {submit} -command {go::tilt BOT B $tiltCB}
 pack .nst.tilt.nCB.l .nst.tilt.nCB.e .nst.tilt.nCB.b -side left
 
 frame .nst.tilt.r
@@ -310,22 +309,22 @@ pack .t.a .t.b .t.c -side left -padx 4 -pady 4
 set abc off
 set acb off
 label .t.a.title -text {A sees...}
-checkbutton .t.a.bc -variable abc -onvalue on -offvalue off -text {B looking at C} -command {go::turn A B C $abc}
-checkbutton .t.a.cb -variable acb -onvalue on -offvalue off -text {C looking at B} -command {go::turn A C B $acb}
+checkbutton .t.a.bc -variable abc -onvalue on -offvalue off -text {B looking at BOT} -command {go::turn A B BOT $abc}
+checkbutton .t.a.cb -variable acb -onvalue on -offvalue off -text {BOT looking at B} -command {go::turn A BOT B $acb}
 pack .t.a.title .t.a.bc .t.a.cb
 
 set bac off
 set bca off
 label .t.b.title -text {B sees...}
-checkbutton .t.b.ac -variable bac -onvalue on -offvalue off -text {A looking at C} -command {go::turn B A C $bac}
-checkbutton .t.b.ca -variable bca -onvalue on -offvalue off -text {C looking at A} -command {go::turn B C A $bca}
+checkbutton .t.b.ac -variable bac -onvalue on -offvalue off -text {A looking at BOT} -command {go::turn B A BOT $bac}
+checkbutton .t.b.ca -variable bca -onvalue on -offvalue off -text {BOT looking at A} -command {go::turn B BOT A $bca}
 pack .t.b.title .t.b.ac .t.b.ca
 
 set cab off
 set cba off
-label .t.c.title -text {C sees...}
-checkbutton .t.c.ab -variable cab -onvalue on -offvalue off -text {A looking at B} -command {go::turn C A B $cab}
-checkbutton .t.c.ba -variable cba -onvalue on -offvalue off -text {B looking at A} -command {go::turn C B A $cba}
+label .t.c.title -text {BOT sees...}
+checkbutton .t.c.ab -variable cab -onvalue on -offvalue off -text {A looking at B} -command {go::turn BOT A B $cab}
+checkbutton .t.c.ba -variable cba -onvalue on -offvalue off -text {B looking at A} -command {go::turn BOT B A $cba}
 pack .t.c.title .t.c.ab .t.c.ba
 
 button .start -text { START } -command { go::start ; destroy .start } -background {#00a000} -foreground white

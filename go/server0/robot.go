@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os/exec"
 	"strings"
 	"time"
@@ -13,12 +14,14 @@ var (
 	robotResult = 3 * time.Second // time to display result
 	robotBlank  = 1 * time.Second // time to blank after result before reset
 
-	isRobot      string
-	useRobot     bool
-	robotThen    time.Time
-	robotRunning bool
-	rLookAt      = make([]int, len(cubes))
-	rCurrent     int
+	masked         = -1
+	robotUID       string
+	useRobot       bool
+	useRobotMasked bool
+	robotThen      time.Time
+	robotRunning   bool
+	rLookAt        = make([]int, len(cubes))
+	rCurrent       int
 )
 
 func hasRobot() bool {
@@ -28,6 +31,7 @@ func hasRobot() bool {
 func initRobot() {
 	useRobot = hasRobot()
 	if useRobot {
+		useRobotMasked = (*opt_m == "on")
 		for i := 0; i < len(cubes); i++ {
 			rLookAt[i] = -1
 		}
@@ -36,8 +40,64 @@ func initRobot() {
 	}
 }
 
+func robotUserSetup() {
+
+	if !hasRobot() {
+		return
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	if *opt_m != "on" {
+		// shuffle positions
+		for i := len(cubes) - 1; i > 0; i-- {
+			j := rand.Intn(i + 1)
+			cubes[i].pos, cubes[j].pos = cubes[j].pos, cubes[i].pos
+		}
+		return
+	}
+
+	// shuffle positions without the last one, which is supposed to be the robot
+	for i := len(cubes) - 2; i > 0; i-- {
+		j := rand.Intn(i + 1)
+		cubes[i].pos, cubes[j].pos = cubes[j].pos, cubes[i].pos
+	}
+
+	bot := len(cubes) - 1
+	masked = rand.Intn(bot) // range: [0, bot>
+
+	chLog <- "B Robot is masking " + cubes[masked].uid
+	fmt.Println("Robot is masking", cubes[masked].uid)
+
+	cubes[bot].pos = cubes[masked].pos
+
+	// masked cube sees all other cubes, except for bot
+	sees := make([]string, 0)
+	for i := 0; i < len(cubes)-1; i++ {
+		if i != masked {
+			sees = append(sees, cubes[i].uid)
+		}
+	}
+	cubes[masked].sees = sees
+
+	// other cubes (including bot) see all other cubes, except masked cube
+	for i := range cubes {
+		if i == masked {
+			continue
+		}
+		sees := make([]string, 0)
+		for j := range cubes {
+			if i != j && j != masked {
+				sees = append(sees, cubes[j].uid)
+			}
+		}
+		cubes[i].sees = sees
+	}
+
+}
+
 func doRobot(me int) {
-	if !useRobot || robotRunning {
+	if !useRobot || robotRunning || me == masked {
 		return
 	}
 
@@ -51,9 +111,10 @@ func doRobot(me int) {
 			break
 		}
 	}
-	if found < 0 {
-		// 'me' one not looking at any cube -> skip test
-		return
+
+	required := len(cubes) - 1
+	if *opt_m == "on" {
+		required--
 	}
 
 	// test
@@ -62,7 +123,7 @@ func doRobot(me int) {
 	for _, i := range rLookAt {
 		if i >= 0 {
 			counts[i]++
-			if counts[i] == len(cubes)-1 {
+			if counts[i] == required {
 				found = i
 				break
 			}
@@ -83,56 +144,52 @@ func doRobot(me int) {
 	}
 
 	robotRunning = true
-	useLookAt = false
 
 	a := "Wrong"
-	if users[rCurrent].uid == isRobot {
+	if users[rCurrent].uid == robotUID {
 		a = "Correct"
 	}
 	chLog <- fmt.Sprintf("I Users selected %s: %s", users[rCurrent].uid, a)
 	fmt.Printf("Users selected %s: %s\n", users[rCurrent].uid, a)
 
-	for i, user := range users {
-		ch := chOut[i]
-		if user.uid == isRobot {
-			setFace(i, 9)
+	rcube := cubes[len(cubes)-1]
+	chCmdQuiet <- "face " + rcube.uid + " 9"
+	chCmdQuiet <- "head " + rcube.uid + " 9"
+
+	useLookAt = false
+	for i, cube := range cubes {
+		color := cube.color
+		if i == rCurrent && cube.uid != robotUID {
+			color = red
+		} else if i == len(cubes)-1 {
+			color = lightred
 		}
-		for j, cube := range user.cubes {
-			if cube == nil {
-				continue
-			}
-			if cube.uid == isRobot {
-				user.n[cntrHead]++
-				select {
-				case ch <- fmt.Sprintf("head %s %d 9\n", cube.uid, user.n[cntrHead]):
-				default:
-					// drop if channel is full
-				}
-			}
-			color := lightgrey
-			if j == rCurrent && cube.uid != isRobot {
-				color = red
-			}
-			user.n[cntrColor]++
-			select {
-			case ch <- fmt.Sprintf("color %s %d %g %g %g\n", cube.uid, user.n[cntrColor], color.r, color.g, color.b):
-			default:
-				// drop if channel is full
-			}
-		}
+		chCmdQuiet <- fmt.Sprintf("color %s %g %g %g", cube.uid, color.r, color.g, color.b)
 	}
-	go func() {
+
+	go func(current int) {
 
 		time.Sleep(robotResult)
 
-		chCmd <- "stop"
-		chCmd <- "hideall"
+		chCmdQuiet <- "stop"
+		chCmdQuiet <- "hideall"
 
 		time.Sleep(robotBlank)
 
-		chCmd <- "restart"
+		chCmdQuiet <- fmt.Sprintf("face %s %d", rcube.uid, rcube.face)
+		chCmdQuiet <- fmt.Sprintf("head %s %d", rcube.uid, rcube.head)
 
-	}()
+		cube := cubes[current]
+		color := cube.color
+		chCmdQuiet <- fmt.Sprintf("color %s %g %g %g", cube.uid, color.r, color.g, color.b)
+
+		initRobot()
+
+		useLookAt = true
+
+		chCmdQuiet <- "restart"
+
+	}(rCurrent)
 }
 
 func runRobot() {
@@ -172,7 +229,7 @@ func runRobot() {
 	if len(a) != 2 || a[0] != "join" {
 		return
 	}
-	isRobot = a[1]
+	robotUID = a[1]
 
 	uid := a[1]
 

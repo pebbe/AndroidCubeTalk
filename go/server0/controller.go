@@ -26,19 +26,17 @@ var (
 	started = false
 )
 
-func restart() {
-	initRobot()
+func controller() {
+
 	initFaces()
+	initHeads()
+	initColors()
 	initSize()
+	initLooking()
 	initNodding()
 	initShaking()
 	initTilting()
-	initLooking()
-}
-
-func controller() {
-
-	restart()
+	initRobot()
 
 	for {
 		select {
@@ -49,7 +47,10 @@ func controller() {
 			handleReq(req)
 		case cmd := <-chCmd:
 			chLog <- "C " + cmd
-			handleCmd(cmd)
+			handleCmd(cmd, true)
+		case cmd := <-chCmdQuiet:
+			chLog <- "C " + cmd
+			handleCmd(cmd, false)
 		}
 	}
 }
@@ -77,10 +78,10 @@ func handleReq(req tRequest) {
 		user.needSetup = true
 
 		resetSize(idx)
-
 		resetLooking(idx)
-
 		resetFaces(idx)
+		resetHeads(idx)
+		resetColors(idx)
 
 	case "lookat":
 
@@ -149,10 +150,6 @@ func handleReq(req tRequest) {
 					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
 					user.n[cntrMoveto]++
 					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
-					user.n[cntrColor]++
-					fmt.Fprintf(&buf, "color %s %d %g %g %g\n", cube.uid, user.n[cntrColor], cube.color.r, cube.color.g, cube.color.b)
-					user.n[cntrHead]++
-					fmt.Fprintf(&buf, "head %s %d %d\n", cube.uid, user.n[cntrHead], cube.head)
 				}
 			}
 			ch <- buf.String()
@@ -202,6 +199,10 @@ func handleReq(req tRequest) {
 
 		showFaces(ch, idx)
 
+		showHeads(ch, idx)
+
+		showColors(ch, idx)
+
 	case "info":
 
 		if len(words) != 3 {
@@ -222,11 +223,13 @@ func handleReq(req tRequest) {
 }
 
 // handleCmd is not run concurrently, so it must be fast
-func handleCmd(cmd string) {
+func handleCmd(cmd string, verbose bool) {
 
 	number_args := "Invalid number of arguments from GUI: %s"
 
-	fmt.Println("Command:", cmd)
+	if verbose {
+		fmt.Println("Command:", cmd)
+	}
 
 	words := strings.Fields(cmd)
 	switch words[0] {
@@ -238,14 +241,9 @@ func handleCmd(cmd string) {
 	case "restart":
 
 		makeUsers()
-		restart()
-		for idx, user := range users {
+		for _, user := range users {
 			user.needSetup = true
-			resetSize(idx)
-			resetLooking(idx)
-			resetFaces(idx)
 		}
-
 		started = true
 
 	case "stop":
@@ -288,6 +286,54 @@ func handleCmd(cmd string) {
 		}
 
 		setFace(idx, int(f))
+
+	case "head":
+
+		if len(words) != 3 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		idx, ok := labels[words[1]]
+		if !ok {
+			w(fmt.Errorf("Illegal label in command: %s", cmd))
+			return
+		}
+
+		f, err := strconv.ParseInt(words[2], 10, 16)
+		if w(err) != nil {
+			return
+		}
+
+		setHead(idx, int(f))
+
+	case "color":
+
+		if len(words) != 5 {
+			w(fmt.Errorf(number_args, cmd))
+			return
+		}
+
+		idx, ok := labels[words[1]]
+		if !ok {
+			w(fmt.Errorf("Illegal label in command: %s", cmd))
+			return
+		}
+
+		f1, err := strconv.ParseFloat(words[2], 64)
+		if w(err) != nil {
+			return
+		}
+		f2, err := strconv.ParseFloat(words[3], 64)
+		if w(err) != nil {
+			return
+		}
+		f3, err := strconv.ParseFloat(words[4], 64)
+		if w(err) != nil {
+			return
+		}
+
+		setColor(idx, f1, f2, f3)
 
 	case "cubesize":
 

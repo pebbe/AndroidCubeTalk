@@ -18,16 +18,18 @@ type tRequest struct {
 }
 
 var (
-	chIn      = make(chan tRequest, 100)
-	chOut     = make([]chan string, 0)
-	chCmd     = make(chan string, 100)
-	chLog     = make(chan string, 100)
-	chLogDone = make(chan bool)
-	chQuit    = make(chan bool)
+	chIn       = make(chan tRequest, 100)
+	chOut      = make([]chan string, 0)
+	chCmd      = make(chan string, 100)
+	chCmdQuiet = make(chan string, 100)
+	chLog      = make(chan string, 100)
+	chLogDone  = make(chan bool)
+	chQuit     = make(chan bool)
 
 	opt_a = flag.String("a", "off", "Audio: on|off")
 	opt_b = flag.String("b", "", "Robot program")
 	opt_d = flag.Float64("d", 4, "Unit distance to actual distance")
+	opt_m = flag.String("m", "off", "With -b, let robot mask another user: on|off")
 	opt_p = flag.Int("p", 8448, "Port number")
 	opt_t = flag.Float64("t", .99, "Tolerance for looking at cube: cosine of angle")
 

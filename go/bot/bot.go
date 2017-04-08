@@ -12,7 +12,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Println("join A")
+	fmt.Println("join BOT")
 	if !scanner.Scan() {
 		return
 	}
@@ -34,7 +34,8 @@ func main() {
 		os.Stdout.Sync()
 
 		for scanner.Scan() {
-			if scanner.Text() == "." {
+			line := scanner.Text()
+			if line == "." {
 				break
 			}
 		}

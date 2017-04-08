@@ -97,6 +97,9 @@ func makeUsers() {
 		Y0 := cube.pos.y
 
 		for j, cube2 := range cubes {
+			if i == j {
+				continue
+			}
 			rotH := math.Atan2(cube2.pos.x, cube2.pos.z) - rotH0
 			l := math.Sqrt(cube2.pos.x*cube2.pos.x + cube2.pos.z*cube2.pos.z)
 			c := tCube{

@@ -5,17 +5,11 @@ import (
 
 	"fmt"
 	"math"
-	"math/rand"
 	"strings"
-	"time"
 )
 
 type tXYZ struct {
 	x, y, z float64
-}
-
-type tRGB struct {
-	r, g, b float64
 }
 
 // This has data on how a user sees another cube, except for actual head movement
@@ -27,6 +21,7 @@ type tCube struct {
 	color   tRGB
 	head    int // texture number
 	face    int // texture number
+	sees    []string
 }
 
 type tUser struct {
@@ -40,29 +35,28 @@ type tUser struct {
 }
 
 var (
-	lightgrey = tRGB{.8, .8, .8}
-	red       = tRGB{1, 0, 0}
-
 	// layout is built from this list
 	cubes = []tCube{
 		tCube{
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
-			color: lightgrey,
+			color: lightblue,
 			head:  0,
 			face:  0,
 		},
 		tCube{
 			uid:   "B",
 			pos:   tXYZ{.866, 0, -.5},
-			color: lightgrey,
+			color: lightblue,
 			head:  0,
 			face:  0,
 		},
+		// If there is a robot, it must be last, or masking will go terribly wrong
+		// If masking is used, the value for 'pos' is ignored
 		tCube{
-			uid:   "C",
+			uid:   "BOT",
 			pos:   tXYZ{-.866, 0, -.5},
-			color: lightgrey,
+			color: lightblue,
 			head:  0,
 			face:  0,
 		},
@@ -85,20 +79,26 @@ func makeUsers() {
 			cubes[i].pos.y *= *opt_d
 			cubes[i].pos.z *= *opt_d
 		}
+
+		// this will be redone by robotUserSetup() if masking is used
+		for i := range cubes {
+			sees := make([]string, 0, len(cubes)-1)
+			for j := range cubes {
+				if i != j {
+					sees = append(sees, cubes[j].uid)
+				}
+			}
+			cubes[i].sees = sees
+		}
 	} else {
 		for _, user := range users {
 			oldCounters[user.uid] = user.n
 		}
 	}
 
-	if hasRobot() {
-		// shuffle positions
-		rand.Seed(time.Now().UnixNano())
-		for i := len(cubes) - 1; i > 0; i-- {
-			j := rand.Intn(i + 1)
-			cubes[i].pos, cubes[j].pos = cubes[j].pos, cubes[i].pos
-		}
-	}
+	// If robot: layout shuffling
+	// If using masking: redo 'sees'
+	robotUserSetup()
 
 	labelstrings := make([]string, 0)
 
@@ -122,7 +122,9 @@ func makeUsers() {
 		rotH0 := math.Atan2(cube.pos.x, cube.pos.z)
 		Y0 := cube.pos.y
 
-		for j, cube2 := range cubes {
+		for _, see := range cube.sees {
+			j := labels[see]
+			cube2 := cubes[j]
 			rotH := math.Atan2(cube2.pos.x, cube2.pos.z) - rotH0
 			l := math.Sqrt(cube2.pos.x*cube2.pos.x + cube2.pos.z*cube2.pos.z)
 			c := tCube{
