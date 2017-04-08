@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+var (
+	choiceHandlers = map[string]func(int, string, string){
+		"":     choiceNone,
+		"none": choiceNone,
+		"demo": choiceDemo,
+	}
+	choiceHandle = choiceHandlers[""]
+)
+
 func infoMakeNotice(user int, lines []string) {
 	users[user].n[cntrInfo]++
 	chOut[user] <- fmt.Sprintf("info %d %d\n%s\n",
@@ -25,7 +34,10 @@ func infoMakeChoice(user int, infoID string, opt1, opt2 string, lines []string) 
 		strings.Join(lines, "\n"))
 }
 
-func infoHandleChoice(user int, infoID string, choice string) {
+func choiceNone(user int, infoID string, choice string) {
+}
+
+func choiceDemo(user int, infoID string, choice string) {
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		infoMakeNotice(user, []string{fmt.Sprintf("You clicked %s for %s", choice, infoID)})

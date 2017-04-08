@@ -9,8 +9,8 @@ type tRGB struct {
 }
 
 var (
-	setcolor = make([][]int, len(cubes))
-	color    = make([]tRGB, len(cubes))
+	setcolor [][]int
+	color    []tRGB
 
 	colornames = map[string]tRGB{
 		"white":     {1, 1, 1},
@@ -24,6 +24,8 @@ var (
 )
 
 func initColors() {
+	setcolor = make([][]int, len(cubes))
+	color = make([]tRGB, len(cubes))
 	for i, cube := range cubes {
 		setcolor[i] = make([]int, 0, len(cubes)-1)
 		color[i] = cube.color

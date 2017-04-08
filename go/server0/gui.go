@@ -65,7 +65,7 @@ pack .f_%s.l .f_%s.e .f_%s.b -side left
 	}
 
 	ww := make([]string, 0, len(using))
-	for _, idx := range using {
+	for idx := range cubes {
 		lbl := cubes[idx].uid
 		ww = append(ww, ".c_"+lbl)
 		x(tk.Eval(fmt.Sprintf(`
@@ -75,6 +75,9 @@ button .c_%s -text {recenter %s} -command {go::recenter %s}
 	x(tk.Eval("pack " + strings.Join(ww, " ") + "\n"))
 
 	x(tk.Eval(`
+button .cc -text {recenter all} -command {go::recenter_all}
+pack .cc
+
 frame .nst
 pack .nst
 
@@ -168,10 +171,12 @@ pack .t
 		x(tk.Eval("frame .t.w" + uid + " -relief groove -borderwidth 3 -padx 4 -pady 4\n"))
 	}
 
-	x(tk.Eval(`
+	if len(frames) > 0 {
+		x(tk.Eval(`
 
 pack ` + strings.Join(frames, " ") + ` -side left -padx 4 -pady 4
 `))
+	}
 
 	for _, i := range using {
 		li := cubes[i].uid
@@ -240,6 +245,10 @@ pack .q -side left
 
 	x(tk.RegisterCommand("go::recenter", func(s string) {
 		chCmd <- "recenter " + s
+	}))
+
+	x(tk.RegisterCommand("go::recenter_all", func() {
+		chCmd <- "recenter_all"
 	}))
 
 	x(tk.RegisterCommand("go::nod", func(sees, seen, value string) {

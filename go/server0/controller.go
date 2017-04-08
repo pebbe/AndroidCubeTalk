@@ -192,6 +192,10 @@ func handleReq(req tRequest) {
 			}
 		}
 
+		if marked {
+			clickHandle(idx, -1)
+		}
+
 		showAudio(ch, idx)
 
 		showLooking(ch, idx)
@@ -214,7 +218,7 @@ func handleReq(req tRequest) {
 		chLog <- fmt.Sprintf("Choice by %s for %s: %s", req.uid, words[1], words[2])
 		fmt.Printf("Choice by %s for %s: %s\n", req.uid, words[1], words[2])
 
-		infoHandleChoice(idx, words[1], words[2])
+		choiceHandle(idx, words[1], words[2])
 
 	default:
 
@@ -370,6 +374,19 @@ func handleCmd(cmd string, verbose bool) {
 			}
 		} else {
 			w(fmt.Errorf("Invalid user in command from GUI: %s", cmd))
+		}
+
+	case "recenter_all":
+
+		// Orders the headset of all users to recenter
+		// the direction the head is currently pointing.
+
+		for i := range users {
+			select {
+			case chOut[i] <- "recenter\n":
+			default:
+				// drop if channel is full
+			}
 		}
 
 	case "nod":

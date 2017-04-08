@@ -14,6 +14,15 @@ type tXYZ struct {
 	x, y, z float64
 }
 
+type jsLayout struct {
+	AudioHandler  string   `json:"audio_handler"`
+	ClickHandler  string   `json:"click_handler"`
+	ChoiceHandler string   `json:"choice_handler"`
+	Looking       bool     `json:"looking"`
+	Looked        bool     `json:"looked"`
+	Cubes         []jsCube `json:"cubes"`
+}
+
 type jsCube struct {
 	Uid   string    `json:"uid"`
 	Pos   []float64 `json:"pos"`
@@ -199,12 +208,30 @@ func loadUsers() {
 
 	data, err := ioutil.ReadFile(*opt_l)
 	x(err)
-	var layout []jsCube
+	var layout jsLayout
 	x(json.Unmarshal(data, &layout))
+
+	markLookingAtMe = layout.Looked
+	markLookingAtThem = layout.Looking
+
+	if markLookingAtMe && markLookingAtThem {
+		x(fmt.Errorf("You can't use both options 'looking' and 'looked'"))
+	}
+
+	var ok bool
+	if audioHandle, ok = audioHandlers[layout.AudioHandler]; !ok {
+		x(fmt.Errorf("Unknown audio handler"))
+	}
+	if clickHandle, ok = clickHandlers[layout.ClickHandler]; !ok {
+		x(fmt.Errorf("Unknown click handler"))
+	}
+	if choiceHandle, ok = choiceHandlers[layout.ChoiceHandler]; !ok {
+		x(fmt.Errorf("Unknown choice handler"))
+	}
 
 	cubes = cubes[0:0]
 
-	for i, c := range layout {
+	for i, c := range layout.Cubes {
 
 		c.Uid = strings.TrimSpace(c.Uid)
 		c.Color = strings.TrimSpace(c.Color)
@@ -247,4 +274,5 @@ func loadUsers() {
 
 	}
 
+	users = make([]*tUser, len(cubes))
 }

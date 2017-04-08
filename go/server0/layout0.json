@@ -1,29 +1,39 @@
-[
-    {
-	"uid":   "A",
-	"pos":   [0, 0, 1],
-	"color": "green",
-	"head":  1,
-	"face":  1,
-	"gui":   true
-    },
-    {
-	"uid":   "B",
-	"comment1": "Values can't begin with dot or minus dot",
-	"pos":   [0.866, 0, -0.5],
-	"color": "green",
-	"head":  1,
-	"face":  1,
-	"gui":   true
-    },
-    {
-	"comment1": "If there is a robot, it must be last, or masking will go terribly wrong",
-	"comment2": "If masking is used, the value for 'pos' is ignored",
-	"uid":   "BOT",
-	"pos":   [-0.866, 0, -0.5],
-	"color": "green",
-	"head":  1,
-	"face":  1,
-	"gui":   true
-    }
-]
+{
+    "audio_handler": "none",
+    "click_handler": "demo",
+    "choice_handler": "demo",
+
+    "COMMENT1": "Don't use both looking and looked",
+    "looking": true,
+    "looked": false,
+
+    "cubes": [
+	{
+	    "uid":   "A",
+	    "pos":   [0, 0, 1],
+	    "color": "green",
+	    "head":  1,
+	    "face":  1,
+	    "gui":   true
+	},
+	{
+	    "uid":   "B",
+	    "COMMENT1": "Values can't begin with dot or minus dot",
+	    "pos":   [0.866, 0, -0.5],
+	    "color": "green",
+	    "head":  1,
+	    "face":  1,
+	    "gui":   true
+	},
+	{
+	    "COMMENT1": "If there is a robot, it must be last, or masking will go horribly wrong",
+	    "COMMENT2": "If masking is used, the value for 'pos' is ignored",
+	    "uid":   "BOT",
+	    "pos":   [-0.866, 0, -0.5],
+	    "color": "green",
+	    "head":  1,
+	    "face":  1,
+	    "gui":   true
+	}
+    ]
+}

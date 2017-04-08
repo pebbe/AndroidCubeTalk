@@ -6,6 +6,12 @@ import (
 
 var (
 	setaudio = make([]bool, len(cubes))
+
+	audioHandlers = map[string]func(int){
+		"":     audioNone,
+		"none": audioNone,
+	}
+	audioHandle = audioHandlers[""]
 )
 
 func initAudio() {
@@ -32,6 +38,8 @@ func doAudio(idx int) {
 	if !withAudio {
 		return
 	}
+	audioHandle(idx)
+}
 
-	// TODO
+func audioNone(idx int) {
 }

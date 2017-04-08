@@ -5,11 +5,13 @@ import (
 )
 
 var (
-	sethead = make([][]int, len(cubes))
-	head    = make([]int, len(cubes))
+	sethead [][]int
+	head    []int
 )
 
 func initHeads() {
+	sethead = make([][]int, len(cubes))
+	head = make([]int, len(cubes))
 	for i, cube := range cubes {
 		sethead[i] = make([]int, 0, len(cubes)-1)
 		head[i] = cube.head

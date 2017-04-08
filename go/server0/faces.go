@@ -5,11 +5,13 @@ import (
 )
 
 var (
-	setface = make([][]int, len(cubes))
-	face    = make([]int, len(cubes))
+	setface [][]int
+	face    []int
 )
 
 func initFaces() {
+	setface = make([][]int, len(cubes))
+	face = make([]int, len(cubes))
 	for i, cube := range cubes {
 		setface[i] = make([]int, 0, len(cubes)-1)
 		face[i] = cube.face
