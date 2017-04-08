@@ -25,15 +25,14 @@ matches the personal layout. Each cube gets a `forward` vector pointing
 towards the y-axis:
 
     angle = atan2(x, z)
-	forward = -sin(angle), 0, -cos(angle)
-	
+    forward = -sin(angle), 0, -cos(angle)
+
 ## How do you know if someone is looking at you? ##
 
 Is A looking at B?
 
     a := labels["A"]
-	b := labels["B"]
-	v := users[a].lookat
-	w := users[a].cubes[b].towards
-	v.x * w.x + v.y * w.y + v.z * w.z > 0.99
-	
+    b := labels["B"]
+    v := users[a].lookat
+    w := users[a].cubes[b].towards
+    v.x * w.x + v.y * w.y + v.z * w.z > 0.99
