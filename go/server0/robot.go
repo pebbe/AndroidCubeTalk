@@ -152,9 +152,9 @@ func doRobot(me int) {
 	for i, cube := range cubes {
 		color := cube.color
 		if i == rCurrent && cube.uid != robotUID {
-			color = red
+			color = colornames["red"]
 		} else if i == len(cubes)-1 {
-			color = lightred
+			color = colornames["lightred"]
 		}
 		chCmdQuiet <- fmt.Sprintf("color %s %g %g %g", cube.uid, color.r, color.g, color.b)
 	}

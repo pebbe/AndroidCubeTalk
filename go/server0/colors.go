@@ -12,11 +12,15 @@ var (
 	setcolor = make([][]int, len(cubes))
 	color    = make([]tRGB, len(cubes))
 
-	white     = tRGB{1, 1, 1}
-	lightgrey = tRGB{.7, .7, .7}
-	lightblue = tRGB{.5, .5, 1}
-	lightred  = tRGB{1, .5, .5}
-	red       = tRGB{1, 0, 0}
+	colornames = map[string]tRGB{
+		"white":     {1, 1, 1},
+		"red":       {1, 0, 0},
+		"green":     {0, 1, 0},
+		"blue":      {0, 0, 1},
+		"lightgrey": {.7, .7, .7},
+		"lightblue": {.5, .5, 1},
+		"lightred":  {1, .5, .5},
+	}
 )
 
 func initColors() {

@@ -3,13 +3,24 @@ package main
 import (
 	"github.com/kr/pretty"
 
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"strings"
 )
 
 type tXYZ struct {
 	x, y, z float64
+}
+
+type jsCube struct {
+	Uid   string    `json:"uid"`
+	Pos   []float64 `json:"pos"`
+	Color string    `json:"color"`
+	Head  int       `json:"head"`
+	Face  int       `json:"face"`
+	Gui   bool      `json:"gui"`
 }
 
 // This has data on how a user sees another cube, except for actual head movement
@@ -22,6 +33,7 @@ type tCube struct {
 	head    int // texture number
 	face    int // texture number
 	sees    []string
+	gui     bool
 }
 
 type tUser struct {
@@ -41,25 +53,34 @@ var (
 		tCube{
 			uid:   "A",
 			pos:   tXYZ{0, 0, 1},
-			color: lightblue,
-			head:  1,
-			face:  1,
+			color: tRGB{1, .6, .6}, // red
+			head:  0,
+			face:  0,
+			gui:   true,
 		},
 		tCube{
 			uid:   "B",
-			pos:   tXYZ{.866, 0, -.5},
-			color: lightblue,
+			pos:   tXYZ{1, 0, 0},
+			color: tRGB{0, .6, 0}, // green
 			head:  1,
 			face:  1,
+			gui:   true,
 		},
-		// If there is a robot, it must be last, or masking will go terribly wrong
-		// If masking is used, the value for 'pos' is ignored
 		tCube{
-			uid:   "BOT",
-			pos:   tXYZ{-.866, 0, -.5},
-			color: lightblue,
-			head:  1,
-			face:  1,
+			uid:   "C",
+			pos:   tXYZ{0, 0, -1},
+			color: tRGB{.4, .7, 1}, // blue
+			head:  2,
+			face:  2,
+			gui:   true,
+		},
+		tCube{
+			uid:   "D",
+			pos:   tXYZ{-1, 0, 0},
+			color: tRGB{.7, .7, .7}, // grey
+			head:  3,
+			face:  3,
+			gui:   true,
 		},
 	}
 
@@ -75,6 +96,9 @@ func makeUsers() {
 
 	if firstMakeUsers {
 		firstMakeUsers = false
+
+		loadUsers()
+
 		for i := range cubes {
 			cubes[i].pos.x *= *opt_d
 			cubes[i].pos.y *= *opt_d
@@ -165,5 +189,62 @@ func makeUsers() {
 
 	// Send layout for user to logger
 	chLog <- fmt.Sprintf("I User layout: %# v", pretty.Formatter(users))
+
+}
+
+func loadUsers() {
+	if *opt_l == "" {
+		return
+	}
+
+	data, err := ioutil.ReadFile(*opt_l)
+	x(err)
+	var layout []jsCube
+	x(json.Unmarshal(data, &layout))
+
+	cubes = cubes[0:0]
+
+	for i, c := range layout {
+
+		c.Uid = strings.TrimSpace(c.Uid)
+		c.Color = strings.TrimSpace(c.Color)
+
+		if c.Color == "" {
+			c.Color = "white"
+		}
+
+		if c.Uid == "" {
+			x(fmt.Errorf("Missing uid in file %q, item number %d", *opt_l, i))
+		}
+
+		if len(c.Pos) != 3 {
+			x(fmt.Errorf("Wrong number of position values in file %q for item %q", *opt_l, c.Uid))
+		}
+
+		color, ok := colornames[c.Color]
+		if !ok {
+			x(fmt.Errorf("Unknown color in file %q for item %q", *opt_l, c.Uid))
+		}
+
+		if c.Head < 0 || c.Head > 9 {
+			x(fmt.Errorf("Invalid head number in file %q for item %q (must be 0 - 9)", *opt_l, c.Uid))
+		}
+
+		if c.Face < 0 || c.Face > 9 {
+			x(fmt.Errorf("Invalid face number in file %q for item %q (must be 0 - 9)", *opt_l, c.Uid))
+		}
+
+		cube := tCube{
+			uid:   c.Uid,
+			pos:   tXYZ{c.Pos[0], c.Pos[1], c.Pos[2]},
+			color: color,
+			head:  c.Head,
+			face:  c.Face,
+			gui:   c.Gui,
+		}
+
+		cubes = append(cubes, cube)
+
+	}
 
 }

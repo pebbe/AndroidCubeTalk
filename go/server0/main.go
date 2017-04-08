@@ -29,6 +29,7 @@ var (
 	opt_a       = flag.String("a", "off", "Audio: on|off")
 	opt_b       = flag.String("b", "", "Robot program")
 	opt_d       = flag.Float64("d", 4, "Unit distance to actual distance")
+	opt_l       = flag.String("l", "", "Layout file")
 	opt_m       = flag.String("m", "off", "With -b, let robot mask another user: on|off")
 	opt_p       = flag.Int("p", 8448, "Port number")
 	opt_t       = flag.Float64("t", .99, "Tolerance for looking at cube: cosine of angle")
@@ -48,7 +49,7 @@ func main() {
 	withRobot = (*opt_b != "")
 	withMasking = (withRobot && *opt_m == "on")
 
-	makeUsers()
+	makeUsers() // must be called before the gui is started
 
 	for _ = range users {
 		chOut = append(chOut, make(chan string, 100))
