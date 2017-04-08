@@ -18,10 +18,12 @@ var (
 		"red":        {.8, 0, 0},
 		"green":      {0, .6, 0},
 		"blue":       {0, 0, 1},
+		"brown":      {.5, .5, 0},
 		"lightgrey":  {.7, .7, .7},
 		"lightred":   {1, .5, .5},
 		"lightgreen": {.4, 1, .4},
 		"lightblue":  {.6, .6, 1},
+		"yellow":     {1, 1, 0},
 	}
 )
 

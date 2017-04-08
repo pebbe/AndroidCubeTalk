@@ -11,7 +11,7 @@
 	{
 	    "uid":   "A",
 	    "pos":   [0, 0, 1],
-	    "color": "green",
+	    "color": "lightred",
 	    "head":  1,
 	    "face":  1,
 	    "gui":   true
@@ -20,7 +20,7 @@
 	    "uid":   "B",
 	    "COMMENT1": "Values can't begin with dot or minus dot",
 	    "pos":   [0.866, 0, -0.5],
-	    "color": "green",
+	    "color": "lightgreen",
 	    "head":  1,
 	    "face":  1,
 	    "gui":   true
@@ -30,7 +30,7 @@
 	    "COMMENT2": "If masking is used, the value for 'pos' is ignored",
 	    "uid":   "BOT",
 	    "pos":   [-0.866, 0, -0.5],
-	    "color": "green",
+	    "color": "lightblue",
 	    "head":  1,
 	    "face":  1,
 	    "gui":   true
