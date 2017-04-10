@@ -3,11 +3,13 @@ package main
 import (
 	"github.com/nsf/gothic"
 
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/template"
 )
 
 var (
@@ -52,16 +54,16 @@ pack .sizes.l .sizes.w .sizes.h .sizes.d .sizes.b -side left
 
 	for _, idx := range using {
 		lbl := cubes[idx].uid
-		x(tk.Eval(fmt.Sprintf(`
-set f_%s_val %d
-frame .f_%s
-pack .f_%s
-label .f_%s.l -text {face %s:}
-entry .f_%s.e  -textvariable f_%s_val
-button .f_%s.b -text {submit} -command {go::face %s $f_%s_val}
-pack .f_%s.l .f_%s.e .f_%s.b -side left
+		x(tk.Eval(format(`
+set f_[[0]]_val [[1]]
+frame .f_[[0]]
+pack .f_[[0]]
+label .f_[[0]].l -text {face [[0]]:}
+entry .f_[[0]].e  -textvariable f_[[0]]_val
+button .f_[[0]].b -text {submit} -command {go::face [[0]] $f_[[0]]_val}
+pack .f_[[0]].l .f_[[0]].e .f_[[0]].b -side left
 `,
-			lbl, cubes[idx].face, lbl, lbl, lbl, lbl, lbl, lbl, lbl, lbl, lbl, lbl, lbl, lbl)))
+			lbl, cubes[idx].face)))
 	}
 
 	ww := make([]string, 0, len(using))
@@ -110,51 +112,36 @@ pack .nst.tilt.title
 				lj := cubes[j].uid
 				globals = append(globals, fmt.Sprintf("%s_%s_%s", item, li, lj))
 				sets = append(sets, fmt.Sprintf("set %s_%s_%s $v", item, li, lj))
-				x(tk.Eval(fmt.Sprintf(`
-frame .nst.%s.n_%s_%s
-pack .nst.%s.n_%s_%s
-label .nst.%s.n_%s_%s.l -text {%s sees %s:}
-set %s_%s_%s 1
-entry .nst.%s.n_%s_%s.e -textvariable %s_%s_%s
-button .nst.%s.n_%s_%s.b -text {submit} -command {go::%s %s %s $%s_%s_%s}
-pack .nst.%s.n_%s_%s.l .nst.%s.n_%s_%s.e .nst.%s.n_%s_%s.b -side left
-`,
-					item, li, lj,
-					item, li, lj,
-					item, li, lj, li, lj,
-					item, li, lj,
-					item, li, lj, item, li, lj,
-					item, li, lj, item, li, lj, item, li, lj,
-					item, li, lj, item, li, lj, item, li, lj)))
+				x(tk.Eval(format(`
+frame .nst.[[0]].n_[[1]]_[[2]]
+pack .nst.[[0]].n_[[1]]_[[2]]
+label .nst.[[0]].n_[[1]]_[[2]].l -text {[[1]] sees [[2]]:}
+set [[0]]_[[1]]_[[2]] 1
+entry .nst.[[0]].n_[[1]]_[[2]].e -textvariable [[0]]_[[1]]_[[2]]
+button .nst.[[0]].n_[[1]]_[[2]].b -text {submit} -command {go::[[0]] [[1]] [[2]] $[[0]]_[[1]]_[[2]]}
+pack .nst.[[0]].n_[[1]]_[[2]].l .nst.[[0]].n_[[1]]_[[2]].e .nst.[[0]].n_[[1]]_[[2]].b -side left
+`, item, li, lj)))
 			}
 		}
-		x(tk.Eval(fmt.Sprintf(`
-frame .nst.%s.r
-pack .nst.%s.r
-label .nst.%s.r.l -text {global:}
-set %svalue 1
-entry .nst.%s.r.e -textvariable %svalue
-button .nst.%s.r.b -text {submit} -command {setglobal%s $%svalue}
-pack .nst.%s.r.l .nst.%s.r.e .nst.%s.r.b -side left
+		x(tk.Eval(format(`
+frame .nst.[[0]].r
+pack .nst.[[0]].r
+label .nst.[[0]].r.l -text {global:}
+set [[0]]value 1
+entry .nst.[[0]].r.e -textvariable [[0]]value
+button .nst.[[0]].r.b -text {submit} -command {setglobal[[0]] $[[0]]value}
+pack .nst.[[0]].r.l .nst.[[0]].r.e .nst.[[0]].r.b -side left
 
-proc setglobal%s args {
-    global %s
+proc setglobal[[0]] args {
+    global [[1]]
     set v [lindex $args 0]
-%s
-    go::global%s $v
+[[2]]
+    go::global[[0]] $v
 }
 `,
 			item,
-			item,
-			item,
-			item,
-			item, item,
-			item, item, item,
-			item, item, item,
-			item,
 			strings.Join(globals, " "),
-			strings.Join(sets, "\n"),
-			item)))
+			strings.Join(sets, "\n"))))
 
 	}
 
@@ -188,22 +175,16 @@ pack ` + strings.Join(frames, " ") + ` -side left -padx 4 -pady 4
 			}
 			lj := cubes[j].uid
 			for _, k := range using {
-				if i == k || j == k {
+				if j == k {
 					continue
 				}
 				lk := cubes[k].uid
 				win := fmt.Sprintf(".t.w%s.w%s_%s", li, lj, lk)
 				combis = append(combis, win)
-				x(tk.Eval(fmt.Sprintf(`
-set sees_%s_%s_%s off
-checkbutton .t.w%s.w%s_%s -variable sees_%s_%s_%s -onvalue on -offvalue off -text {%s looking at %s} -command {go::turn %s %s %s $sees_%s_%s_%s}
-`,
-					li, lj, lk,
-					li, lj, lk,
-					li, lj, lk,
-					lj, lk,
-					li, lj, lk,
-					li, lj, lk)))
+				x(tk.Eval(format(`
+set sees_[[0]]_[[1]]_[[0]] off
+checkbutton .t.w[[0]].w[[1]]_[[2]] -variable sees_[[0]]_[[1]]_[[2]] -onvalue on -offvalue off -text {[[1]] looking at [[2]]} -command {go::turn [[0]] [[1]] [[2]] $sees_[[0]]_[[1]]_[[2]]}
+`, li, lj, lk)))
 			}
 		}
 		x(tk.Eval(fmt.Sprintf("pack .t.w%s.title %s\n", li, strings.Join(combis, " "))))
@@ -293,4 +274,19 @@ func tclquote(s string) string {
 	s = strings.Replace(s, "]", "\\]", -1)
 	s = strings.Replace(s, "$", "\\$", -1)
 	return s
+}
+
+func format(t string, args ...interface{}) string {
+
+	t = strings.Replace(t, "{[[", "{ {{- index . ", -1)
+	t = strings.Replace(t, "[[", "{{index . ", -1)
+	t = strings.Replace(t, "]]}", " -}} }", -1)
+	t = strings.Replace(t, "]]", "}}", -1)
+
+	tmp := template.Must(template.New("tmp").Parse(t))
+
+	var buf bytes.Buffer
+	x(tmp.Execute(&buf, args))
+
+	return buf.String()
 }
