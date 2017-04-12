@@ -34,7 +34,7 @@ func main() {
 
 	if len(os.Args) != 2 {
 		fmt.Printf(`
-Usage: %s settings_file
+Usage: %s config_file
 
 `, os.Args[0])
 		return
