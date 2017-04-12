@@ -28,6 +28,8 @@ type jsSettings struct {
 	Users          []string `json:"users"`
 	UnitDistance   float64  `json:"unit_distance"`
 	DefaultColor   string   `json:"default_color"`
+	DefaultFace    int      `json:"default_face"`
+	DefaultHead    int      `json:"default_head"`
 	DefaultSkipGui bool     `json:"default_skip_gui"`
 	Cubes          []jsCube `json:"cubes"`
 }
@@ -36,8 +38,8 @@ type jsCube struct {
 	Uid   string    `json:"uid"`
 	Pos   []float64 `json:"pos"`
 	Color string    `json:"color"`
-	Head  int       `json:"head"`
 	Face  int       `json:"face"`
+	Head  int       `json:"head"`
 	Gui   bool      `json:"gui"`
 }
 
@@ -144,9 +146,11 @@ func readSettings(filename string) {
 				z = math.Cos(r)
 			}
 			settings.Cubes[i] = jsCube{
-				Uid: u,
-				Pos: []float64{x, y, z},
-				Gui: !settings.DefaultSkipGui,
+				Uid:  u,
+				Pos:  []float64{x, y, z},
+				Face: settings.DefaultFace,
+				Head: settings.DefaultHead,
+				Gui:  !settings.DefaultSkipGui,
 			}
 		}
 	}
