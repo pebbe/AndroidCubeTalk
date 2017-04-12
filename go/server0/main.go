@@ -40,7 +40,7 @@ Usage: %s settings_file
 		return
 	}
 
-	readSettings(os.Args[1])
+	readConfig(os.Args[1])
 
 	makeUsers() // must be called before the gui is started
 
@@ -62,7 +62,7 @@ Usage: %s settings_file
 	go controller()
 
 	go func() {
-		ln, err := net.Listen("tcp", fmt.Sprint(":", settings.Port))
+		ln, err := net.Listen("tcp", fmt.Sprint(":", config.Port))
 		x(err)
 		for {
 			conn, err := ln.Accept()

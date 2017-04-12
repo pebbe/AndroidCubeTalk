@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-type jsSettings struct {
+type jsConfig struct {
 	Port int `json:"port"`
 
 	Looking   bool    `json:"looking"`
@@ -44,96 +44,96 @@ type jsCube struct {
 }
 
 var (
-	settings jsSettings
+	config jsConfig
 )
 
-func readSettings(filename string) {
+func readConfig(filename string) {
 	var ok bool
 
 	data, err := ioutil.ReadFile(filename)
 	x(err)
-	x(json.Unmarshal(data, &settings))
+	x(json.Unmarshal(data, &config))
 
-	if settings.Port < 1 {
-		settings.Port = 8448
+	if config.Port < 1 {
+		config.Port = 8448
 	}
 
-	markLookingAtMe = settings.Looked
-	markLookingAtThem = settings.Looking
+	markLookingAtMe = config.Looked
+	markLookingAtThem = config.Looking
 	if markLookingAtMe && markLookingAtThem {
 		x(fmt.Errorf("You can't use both options 'looking' and 'looked'"))
 	}
-	if settings.Tolerance <= 0 {
-		settings.Tolerance = .99
+	if config.Tolerance <= 0 {
+		config.Tolerance = .99
 	}
 
-	if settings.Audio {
+	if config.Audio {
 		withAudio = true
-		settings.AudioHandler = strings.TrimSpace(settings.AudioHandler)
-		if settings.AudioHandler == "" {
-			settings.AudioHandler = "none"
+		config.AudioHandler = strings.TrimSpace(config.AudioHandler)
+		if config.AudioHandler == "" {
+			config.AudioHandler = "none"
 		}
-		if audioHandle, ok = audioHandlers[settings.AudioHandler]; !ok {
+		if audioHandle, ok = audioHandlers[config.AudioHandler]; !ok {
 			x(fmt.Errorf("Unknown audio handler"))
 		}
 	} else {
-		settings.AudioHandler = "none"
+		config.AudioHandler = "none"
 	}
 
-	settings.ClickHandler = strings.TrimSpace(settings.ClickHandler)
-	if settings.ClickHandler == "" {
-		settings.ClickHandler = "none"
+	config.ClickHandler = strings.TrimSpace(config.ClickHandler)
+	if config.ClickHandler == "" {
+		config.ClickHandler = "none"
 	}
-	if clickHandle, ok = clickHandlers[settings.ClickHandler]; !ok {
+	if clickHandle, ok = clickHandlers[config.ClickHandler]; !ok {
 		x(fmt.Errorf("Unknown click handler"))
 	}
 
-	settings.ChoiceHandler = strings.TrimSpace(settings.ChoiceHandler)
-	if settings.ChoiceHandler == "" {
-		settings.ChoiceHandler = "none"
+	config.ChoiceHandler = strings.TrimSpace(config.ChoiceHandler)
+	if config.ChoiceHandler == "" {
+		config.ChoiceHandler = "none"
 	}
-	if choiceHandle, ok = choiceHandlers[settings.ChoiceHandler]; !ok {
+	if choiceHandle, ok = choiceHandlers[config.ChoiceHandler]; !ok {
 		x(fmt.Errorf("Unknown choice handler"))
 	}
 
-	settings.Robot = strings.TrimSpace(settings.Robot)
-	if settings.Robot == "" {
-		settings.RobotMasking = false
+	config.Robot = strings.TrimSpace(config.Robot)
+	if config.Robot == "" {
+		config.RobotMasking = false
 	} else {
 		withRobot = true
 	}
-	withMasking = settings.RobotMasking
+	withMasking = config.RobotMasking
 
-	hasUsers := (settings.Users != nil && len(settings.Users) > 0)
-	hasCubes := (settings.Cubes != nil && len(settings.Cubes) > 0)
+	hasUsers := (config.Users != nil && len(config.Users) > 0)
+	hasCubes := (config.Cubes != nil && len(config.Cubes) > 0)
 	if hasCubes && hasUsers {
 		x(fmt.Errorf("You can't define both users and cubes"))
 	}
 	if !(hasUsers || hasCubes) {
-		x(fmt.Errorf("You need to define users or cubes in oyur settings"))
+		x(fmt.Errorf("You need to define users or cubes in oyur config"))
 	}
 
-	if settings.UnitDistance <= 0 {
-		settings.UnitDistance = 4
+	if config.UnitDistance <= 0 {
+		config.UnitDistance = 4
 	}
 
-	settings.DefaultColor = strings.TrimSpace(settings.DefaultColor)
-	if settings.DefaultColor == "" {
-		settings.DefaultColor = "lightgrey"
+	config.DefaultColor = strings.TrimSpace(config.DefaultColor)
+	if config.DefaultColor == "" {
+		config.DefaultColor = "lightgrey"
 	}
 
 	if hasCubes {
-		settings.Users = make([]string, len(settings.Cubes))
-		for i, c := range settings.Cubes {
-			settings.Users[i] = c.Uid
+		config.Users = make([]string, len(config.Cubes))
+		for i, c := range config.Cubes {
+			config.Users[i] = c.Uid
 		}
 	} else {
-		settings.Cubes = make([]jsCube, len(settings.Users))
-		n := len(settings.Users)
-		if settings.RobotMasking {
+		config.Cubes = make([]jsCube, len(config.Users))
+		n := len(config.Users)
+		if config.RobotMasking {
 			n--
 		}
-		for i, u := range settings.Users {
+		for i, u := range config.Users {
 			var x, y, z float64
 			if i == n {
 				x = 0
@@ -145,31 +145,31 @@ func readSettings(filename string) {
 				y = 0
 				z = math.Cos(r)
 			}
-			settings.Cubes[i] = jsCube{
+			config.Cubes[i] = jsCube{
 				Uid:  u,
 				Pos:  []float64{x, y, z},
-				Face: settings.DefaultFace,
-				Head: settings.DefaultHead,
-				Gui:  !settings.DefaultSkipGui,
+				Face: config.DefaultFace,
+				Head: config.DefaultHead,
+				Gui:  !config.DefaultSkipGui,
 			}
 		}
 	}
 
-	for _, c := range settings.Cubes {
+	for _, c := range config.Cubes {
 		if c.Color == "" {
-			c.Color = settings.DefaultColor
+			c.Color = config.DefaultColor
 		}
 	}
 
-	cubes = make([]tCube, 0, len(settings.Cubes))
+	cubes = make([]tCube, 0, len(config.Cubes))
 
-	for i, c := range settings.Cubes {
+	for i, c := range config.Cubes {
 
 		c.Uid = strings.TrimSpace(c.Uid)
 		c.Color = strings.TrimSpace(c.Color)
 
 		if c.Color == "" {
-			c.Color = settings.DefaultColor
+			c.Color = config.DefaultColor
 		}
 
 		if c.Uid == "" {
@@ -208,7 +208,7 @@ func readSettings(filename string) {
 
 	users = make([]*tUser, len(cubes))
 
-	b, err := json.MarshalIndent(settings, "    ", "    ")
+	b, err := json.MarshalIndent(config, "    ", "    ")
 	x(err)
-	chLog <- fmt.Sprint("I Settings:\n    ", string(b))
+	chLog <- fmt.Sprint("I Config:\n    ", string(b))
 }

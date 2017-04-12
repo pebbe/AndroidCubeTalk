@@ -194,9 +194,9 @@ func runRobot() {
 		return
 	}
 
-	chLog <- "B Starting robot: " + settings.Robot
+	chLog <- "B Starting robot: " + config.Robot
 
-	words := strings.Fields(settings.Robot)
+	words := strings.Fields(config.Robot)
 	cmd := exec.Command(words[0], words[1:]...)
 	stdin, err := cmd.StdinPipe()
 	x(err)
@@ -268,6 +268,6 @@ func runRobot() {
 
 	w(cmd.Wait())
 
-	chLog <- "B Stopped robot: " + settings.Robot
-	fmt.Println("Stopped robot:", settings.Robot)
+	chLog <- "B Stopped robot: " + config.Robot
+	fmt.Println("Stopped robot:", config.Robot)
 }

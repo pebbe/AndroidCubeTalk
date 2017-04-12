@@ -1,13 +1,44 @@
 
+## Running server0
+
+Run as:
+
+    ./server0 config_file.json
+
+To see what options are available, run this command:
+
+    ./server0 layout-minimal.json
+
+You can then see a full layout (in json format) at the top of
+the log file.
+
+In the config file, you either define a layout of cubes with
+the option `cubes`, or you just give a list of user names in
+`users`. Though they are both filled out in the log file, you
+can't use both at the same time as input.
+
+When you use `users`, a layout is created putting all users in
+a circle, but if there is a robot that masks another user, it is
+put away from the circle. The values for `default_color`,
+`default_face`, `default_head`, and `default_skip_gui` are used to
+fill in the details for the cubes.
+
+When you use `cubes`, the list of users if created from the UIDs
+of the cubes. When a cube has no color, the value of
+`default_color` is used. The values for `default_face`,
+`default_head`, and `default_skip_gui` are ignored.
+
+
+
 ## Global layout ##
 
 In the coordinate system, positive x points to the right, positive y
 points up, and positive z points forward (towards the viewer).
 
-The global layout is defined in file `user.go` after the comment `layout
-is built from this list`. Here the cubes are positioned, usually in a
-circle equidistant from the center, usually at level `y=0`, but in this
-example one cube is located below and one above the zero level.
+The global layout is created from the set of cubes defined in the config
+file, or, if it is missing in the config file, a layout is generated for
+the users listed in the config file.
+
 
 ## Per user layout ##
 

@@ -52,9 +52,9 @@ func makeUsers() {
 		firstMakeUsers = false
 
 		for i := range cubes {
-			cubes[i].pos.x *= settings.UnitDistance
-			cubes[i].pos.y *= settings.UnitDistance
-			cubes[i].pos.z *= settings.UnitDistance
+			cubes[i].pos.x *= config.UnitDistance
+			cubes[i].pos.y *= config.UnitDistance
+			cubes[i].pos.z *= config.UnitDistance
 		}
 
 		// this will be redone by robotUserSetup() if masking is used
@@ -137,9 +137,13 @@ func makeUsers() {
 
 	chLog <- fmt.Sprintf("I UIDs: map[%v]", strings.Join(labelstrings, " "))
 
-	chLog <- fmt.Sprintf("I Global layout: %# v", pretty.Formatter(cubes))
+	chLog <- strings.Replace(
+		pretty.Sprintf("I Global layout:\n%# v", cubes),
+		"\n", "\n    ", -1)
 
 	// Send layout for user to logger
-	chLog <- fmt.Sprintf("I User layout: %# v", pretty.Formatter(users))
+	chLog <- strings.Replace(
+		pretty.Sprintf("I User layout:\n%# v", users),
+		"\n", "\n    ", -1)
 
 }
