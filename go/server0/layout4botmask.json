@@ -1,25 +1,9 @@
 {
+    "COMMENT1": "If there is a robot, it must be last, or masking will go horribly wrong"
+    "users": ["A", "B", "C", "BOT"],
+
     "looking": true,
-    "cubes": [
-	{
-	    "uid":   "A",
-	    "pos":   [0, 0, 1],
-	    "gui":   true
-	},
-	{
-	    "uid":   "B",
-	    "pos":   [0.866, 0, -0.5],
-	    "gui":   true
-	},
-	{
-	    "uid":   "C",
-	    "pos":   [-0.866, 0, -0.5],
-	    "gui":   true
-	},
-	{
-	    "uid":   "BOT",
-	    "pos":   [0, 1, -2],
-	    "gui":   true
-	}    
-    ]
+
+    "robot": "../bot/bot",
+    "robot_masking": true
 }

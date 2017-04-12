@@ -19,17 +19,15 @@
 	{
 	    "uid":   "B",
 	    "COMMENT1": "Values can't begin with dot or minus dot",
-	    "pos":   [0.866, 0, -0.5],
+	    "pos":   [0.866, -0.3, -0.5],
 	    "color": "lightgreen",
 	    "head":  1,
 	    "face":  1,
 	    "gui":   true
 	},
 	{
-	    "COMMENT1": "If there is a robot, it must be last, or masking will go horribly wrong",
-	    "COMMENT2": "If masking is used, the value for 'pos' is ignored",
-	    "uid":   "BOT",
-	    "pos":   [-0.866, 0, -0.5],
+	    "uid":   "C",
+	    "pos":   [-0.866, 0.3, -0.5],
 	    "color": "lightblue",
 	    "head":  1,
 	    "face":  1,

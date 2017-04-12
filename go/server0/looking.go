@@ -21,7 +21,7 @@ func isLookingAt(from, to int) bool {
 	}
 	v := users[from].lookat
 	w := users[from].cubes[to].towards
-	return v.x*w.x+v.y*w.y+v.z*w.z > *opt_t
+	return v.x*w.x+v.y*w.y+v.z*w.z > settings.Tolerance
 }
 
 func initLooking() {

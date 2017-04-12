@@ -18,18 +18,21 @@ var (
 	robotUID     string
 	robotThen    time.Time
 	robotRunning bool
-	rLookAt      = make([]int, len(cubes))
+	rLookAt      []int
 	rCurrent     int
 )
 
 func initRobot() {
-	if withRobot {
-		for i := 0; i < len(cubes); i++ {
-			rLookAt[i] = -1
-		}
-		robotRunning = false
-		rCurrent = -1
+	if !withRobot {
+		return
 	}
+
+	rLookAt = make([]int, len(cubes))
+	for i := 0; i < len(cubes); i++ {
+		rLookAt[i] = -1
+	}
+	robotRunning = false
+	rCurrent = -1
 }
 
 func robotUserSetup() {
@@ -37,6 +40,8 @@ func robotUserSetup() {
 	if !withRobot {
 		return
 	}
+
+	initRobot()
 
 	rand.Seed(time.Now().UnixNano())
 
@@ -189,9 +194,9 @@ func runRobot() {
 		return
 	}
 
-	chLog <- "B Starting robot: " + *opt_b
+	chLog <- "B Starting robot: " + settings.Robot
 
-	words := strings.Fields(*opt_b)
+	words := strings.Fields(settings.Robot)
 	cmd := exec.Command(words[0], words[1:]...)
 	stdin, err := cmd.StdinPipe()
 	x(err)
@@ -263,6 +268,6 @@ func runRobot() {
 
 	w(cmd.Wait())
 
-	chLog <- "B Stopped robot: " + *opt_b
-	fmt.Println("Stopped robot:", *opt_b)
+	chLog <- "B Stopped robot: " + settings.Robot
+	fmt.Println("Stopped robot:", settings.Robot)
 }

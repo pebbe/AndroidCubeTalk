@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	setaudio = make([]bool, len(cubes))
+	setaudio []bool
 
 	audioHandlers = map[string]func(int){
 		"":     audioNone,
@@ -18,14 +18,20 @@ func initAudio() {
 	if !withAudio {
 		return
 	}
-	// nothing to do
+	setaudio = make([]bool, len(cubes))
 }
 
 func resetAudio(idx int) {
+	if !withAudio {
+		return
+	}
 	setaudio[idx] = withAudio
 }
 
 func showAudio(ch chan string, idx int) {
+	if !withAudio {
+		return
+	}
 	if setaudio[idx] {
 		setaudio[idx] = false
 		user := users[idx]

@@ -1,15 +1,5 @@
 {
+    "users": ["A", "B"],
+
     "looking": true,
-    "cubes": [
-	{
-	    "uid":   "A",
-	    "pos":   [0, 0, 1],
-	    "gui":   true
-	},
-	{
-	    "uid":   "B",
-	    "pos":   [0, 0, -1],
-	    "gui":   true
-	}
-    ]
 }

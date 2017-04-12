@@ -3,33 +3,13 @@ package main
 import (
 	"github.com/kr/pretty"
 
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"strings"
 )
 
 type tXYZ struct {
 	x, y, z float64
-}
-
-type jsLayout struct {
-	AudioHandler  string   `json:"audio_handler"`
-	ClickHandler  string   `json:"click_handler"`
-	ChoiceHandler string   `json:"choice_handler"`
-	Looking       bool     `json:"looking"`
-	Looked        bool     `json:"looked"`
-	Cubes         []jsCube `json:"cubes"`
-}
-
-type jsCube struct {
-	Uid   string    `json:"uid"`
-	Pos   []float64 `json:"pos"`
-	Color string    `json:"color"`
-	Head  int       `json:"head"`
-	Face  int       `json:"face"`
-	Gui   bool      `json:"gui"`
 }
 
 // This has data on how a user sees another cube, except for actual head movement
@@ -57,43 +37,8 @@ type tUser struct {
 }
 
 var (
-	// layout is built from this list
-	cubes = []tCube{
-		tCube{
-			uid:   "A",
-			pos:   tXYZ{0, 0, 1},
-			color: tRGB{1, .6, .6}, // red
-			head:  0,
-			face:  0,
-			gui:   true,
-		},
-		tCube{
-			uid:   "B",
-			pos:   tXYZ{1, 0, 0},
-			color: tRGB{0, .6, 0}, // green
-			head:  1,
-			face:  1,
-			gui:   true,
-		},
-		tCube{
-			uid:   "C",
-			pos:   tXYZ{0, 0, -1},
-			color: tRGB{.4, .7, 1}, // blue
-			head:  2,
-			face:  2,
-			gui:   true,
-		},
-		tCube{
-			uid:   "D",
-			pos:   tXYZ{-1, 0, 0},
-			color: tRGB{.7, .7, .7}, // grey
-			head:  3,
-			face:  3,
-			gui:   true,
-		},
-	}
-
-	users  = make([]*tUser, len(cubes))
+	cubes  []tCube
+	users  []*tUser
 	labels = make(map[string]int)
 
 	firstMakeUsers = true
@@ -106,12 +51,10 @@ func makeUsers() {
 	if firstMakeUsers {
 		firstMakeUsers = false
 
-		loadUsers()
-
 		for i := range cubes {
-			cubes[i].pos.x *= *opt_d
-			cubes[i].pos.y *= *opt_d
-			cubes[i].pos.z *= *opt_d
+			cubes[i].pos.x *= settings.UnitDistance
+			cubes[i].pos.y *= settings.UnitDistance
+			cubes[i].pos.z *= settings.UnitDistance
 		}
 
 		// this will be redone by robotUserSetup() if masking is used
@@ -199,80 +142,4 @@ func makeUsers() {
 	// Send layout for user to logger
 	chLog <- fmt.Sprintf("I User layout: %# v", pretty.Formatter(users))
 
-}
-
-func loadUsers() {
-	if *opt_l == "" {
-		return
-	}
-
-	data, err := ioutil.ReadFile(*opt_l)
-	x(err)
-	var layout jsLayout
-	x(json.Unmarshal(data, &layout))
-
-	markLookingAtMe = layout.Looked
-	markLookingAtThem = layout.Looking
-
-	if markLookingAtMe && markLookingAtThem {
-		x(fmt.Errorf("You can't use both options 'looking' and 'looked'"))
-	}
-
-	var ok bool
-	if audioHandle, ok = audioHandlers[layout.AudioHandler]; !ok {
-		x(fmt.Errorf("Unknown audio handler"))
-	}
-	if clickHandle, ok = clickHandlers[layout.ClickHandler]; !ok {
-		x(fmt.Errorf("Unknown click handler"))
-	}
-	if choiceHandle, ok = choiceHandlers[layout.ChoiceHandler]; !ok {
-		x(fmt.Errorf("Unknown choice handler"))
-	}
-
-	cubes = cubes[0:0]
-
-	for i, c := range layout.Cubes {
-
-		c.Uid = strings.TrimSpace(c.Uid)
-		c.Color = strings.TrimSpace(c.Color)
-
-		if c.Color == "" {
-			c.Color = "white"
-		}
-
-		if c.Uid == "" {
-			x(fmt.Errorf("Missing uid in file %q, item number %d", *opt_l, i))
-		}
-
-		if len(c.Pos) != 3 {
-			x(fmt.Errorf("Wrong number of position values in file %q for item %q", *opt_l, c.Uid))
-		}
-
-		color, ok := colornames[c.Color]
-		if !ok {
-			x(fmt.Errorf("Unknown color in file %q for item %q", *opt_l, c.Uid))
-		}
-
-		if c.Head < 0 || c.Head > 9 {
-			x(fmt.Errorf("Invalid head number in file %q for item %q (must be 0 - 9)", *opt_l, c.Uid))
-		}
-
-		if c.Face < 0 || c.Face > 9 {
-			x(fmt.Errorf("Invalid face number in file %q for item %q (must be 0 - 9)", *opt_l, c.Uid))
-		}
-
-		cube := tCube{
-			uid:   c.Uid,
-			pos:   tXYZ{c.Pos[0], c.Pos[1], c.Pos[2]},
-			color: color,
-			head:  c.Head,
-			face:  c.Face,
-			gui:   c.Gui,
-		}
-
-		cubes = append(cubes, cube)
-
-	}
-
-	users = make([]*tUser, len(cubes))
 }

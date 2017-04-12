@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -26,13 +25,6 @@ var (
 	chLogDone  = make(chan bool)
 	chQuit     = make(chan bool)
 
-	opt_a       = flag.String("a", "off", "Audio: on|off")
-	opt_b       = flag.String("b", "", "Robot program")
-	opt_d       = flag.Float64("d", 4, "Unit distance to actual distance")
-	opt_l       = flag.String("l", "", "Layout file")
-	opt_m       = flag.String("m", "off", "With -b, let robot mask another user: on|off")
-	opt_p       = flag.Int("p", 8448, "Port number")
-	opt_t       = flag.Float64("t", .99, "Tolerance for looking at cube: cosine of angle")
 	withAudio   bool
 	withRobot   bool
 	withMasking bool
@@ -40,14 +32,15 @@ var (
 
 func main() {
 
-	if len(os.Args) == 1 {
-		fmt.Printf("For usage, run: %s -h\n", os.Args[0])
+	if len(os.Args) != 2 {
+		fmt.Printf(`
+Usage: %s settings_file
+
+`, os.Args[0])
+		return
 	}
 
-	flag.Parse()
-	withAudio = (*opt_a == "on")
-	withRobot = (*opt_b != "")
-	withMasking = (withRobot && *opt_m == "on")
+	readSettings(os.Args[1])
 
 	makeUsers() // must be called before the gui is started
 
@@ -69,7 +62,7 @@ func main() {
 	go controller()
 
 	go func() {
-		ln, err := net.Listen("tcp", fmt.Sprint(":", *opt_p))
+		ln, err := net.Listen("tcp", fmt.Sprint(":", settings.Port))
 		x(err)
 		for {
 			conn, err := ln.Accept()
