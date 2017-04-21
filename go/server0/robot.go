@@ -14,12 +14,12 @@ var (
 	robotResult = 3 * time.Second // time to display result
 	robotBlank  = 1 * time.Second // time to blank after result before reset
 
-	masked       = -1
-	robotUID     string
-	robotThen    time.Time
-	robotRunning bool
-	rLookAt      []int
-	rCurrent     int
+	masked        = -1
+	robotUID      string
+	robotThen     time.Time
+	robotSelected bool
+	rLookAt       []int
+	rCurrent      int
 )
 
 func initRobot() {
@@ -31,7 +31,7 @@ func initRobot() {
 	for i := 0; i < len(cubes); i++ {
 		rLookAt[i] = -1
 	}
-	robotRunning = false
+	robotSelected = false
 	rCurrent = -1
 }
 
@@ -94,7 +94,7 @@ func robotUserSetup() {
 }
 
 func doRobot(me int) {
-	if !withRobot || robotRunning || me == masked {
+	if !withRobot || robotSelected || me == masked {
 		return
 	}
 
@@ -140,7 +140,7 @@ func doRobot(me int) {
 		return
 	}
 
-	robotRunning = true
+	robotSelected = true
 
 	a := "Wrong"
 	if users[rCurrent].uid == robotUID {

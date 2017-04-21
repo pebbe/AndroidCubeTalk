@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strings"
 	"time"
 )
 
 func main() {
+
+	running := false
 
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -35,6 +38,13 @@ func main() {
 
 		for scanner.Scan() {
 			line := scanner.Text()
+			if !running && strings.HasPrefix(line, "enter") {
+				running = true
+				fmt.Fprintln(os.Stderr, "Experiment started")
+			} else if running && strings.HasPrefix(line, "exit") {
+				running = false
+				fmt.Fprintln(os.Stderr, "Experiment stopped")
+			}
 			if line == "." {
 				break
 			}

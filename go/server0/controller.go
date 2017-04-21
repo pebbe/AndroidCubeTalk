@@ -192,15 +192,19 @@ func handleReq(req tRequest) {
 
 	case "command": // from bot only
 
-		cmd := strings.Join(words[1:], " ")
-		chLog <- "C " + cmd
-		handleCmd(cmd, true)
+		if !robotSelected {
+			cmd := strings.Join(words[1:], " ")
+			chLog <- "C " + cmd
+			handleCmd(cmd, true)
+		}
 
 	case "command_quiet": // from bot only
 
-		cmd := strings.Join(words[1:], " ")
-		chLog <- "C " + cmd
-		handleCmd(cmd, false)
+		if !robotSelected {
+			cmd := strings.Join(words[1:], " ")
+			chLog <- "C " + cmd
+			handleCmd(cmd, false)
+		}
 
 	case "log":
 
