@@ -241,10 +241,12 @@ func handleCmd(cmd string, verbose bool) {
 
 	case "start":
 
+		scriptStart()
 		started = true
 
 	case "stop":
 
+		scriptStop()
 		started = false
 
 	case "restart": // called by robot handler: should update layout
@@ -253,6 +255,7 @@ func handleCmd(cmd string, verbose bool) {
 		for _, user := range users {
 			user.needSetup = true
 		}
+		scriptStart()
 		started = true
 
 	case "hideall":

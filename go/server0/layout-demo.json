@@ -7,7 +7,20 @@
     "looking": true,
     "looked": false,
 
-    "COMMENT2": "Don't use both users and cubes",
+    "COMMENT2": "sleep value in milliseconds",
+    "script": [
+	"globalnod 1",
+	"globalshake 1",
+	"globaltilt 1",
+	"sleep 20000",
+	"globalnod 3",
+	"globalshake 3",
+	"globaltilt 3",
+	"sleep 20000"
+    ],
+    "script_repeat": true,
+
+    "COMMENT3": "Don't use both users and cubes",
     "users": [ ],
     "cubes": [
 	{

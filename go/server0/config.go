@@ -25,6 +25,9 @@ type jsConfig struct {
 	Robot        string `json:"robot"`
 	RobotMasking bool   `json:"robot_masking"`
 
+	Script       []string `json:"script"`
+	ScriptRepeat bool     `json:"script_repeat"`
+
 	Users          []string `json:"users"`
 	UnitDistance   float64  `json:"unit_distance"`
 	DefaultColor   string   `json:"default_color"`
