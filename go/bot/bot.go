@@ -47,6 +47,20 @@ func main() {
 			i = 0
 		}
 
+		if i%20 == 0 {
+			r := float64(i%100) / 100
+			g := 1.0 - r
+			b := .7
+			fmt.Fprintf(os.Stdout, "command_quiet color BOT %f %f %f\n", r, g, b)
+			os.Stdout.Sync()
+			for scanner.Scan() {
+				line := scanner.Text()
+				if line == "." {
+					break
+				}
+			}
+		}
+
 		time.Sleep(40 * time.Millisecond)
 	}
 

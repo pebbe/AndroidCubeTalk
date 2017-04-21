@@ -67,24 +67,6 @@ func handleReq(req tRequest) {
 	words := strings.Fields(cmd)
 	switch words[0] {
 
-	case "log":
-
-		fmt.Println("Log", req.uid+":", strings.Join(words[1:], " "))
-
-	case "reset":
-
-		// This commands tells the server that the client needs the setup.
-		// The setup is not sent now, but with the following 'lookat' command.
-
-		user.needSetup = true
-
-		resetAudio(idx)
-		resetSize(idx)
-		resetLooking(idx)
-		resetFaces(idx)
-		resetHeads(idx)
-		resetColors(idx)
-
 	case "lookat":
 
 		if !started {
@@ -207,6 +189,36 @@ func handleReq(req tRequest) {
 		showHeads(ch, idx)
 
 		showColors(ch, idx)
+
+	case "command": // from bot only
+
+		cmd := strings.Join(words[1:], " ")
+		chLog <- "C " + cmd
+		handleCmd(cmd, true)
+
+	case "command_quiet": // from bot only
+
+		cmd := strings.Join(words[1:], " ")
+		chLog <- "C " + cmd
+		handleCmd(cmd, false)
+
+	case "log":
+
+		fmt.Println("Log", req.uid+":", strings.Join(words[1:], " "))
+
+	case "reset":
+
+		// This commands tells the server that the client needs the setup.
+		// The setup is not sent now, but with the following 'lookat' command.
+
+		user.needSetup = true
+
+		resetAudio(idx)
+		resetSize(idx)
+		resetLooking(idx)
+		resetFaces(idx)
+		resetHeads(idx)
+		resetColors(idx)
 
 	case "info":
 
