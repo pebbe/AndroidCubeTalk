@@ -29,7 +29,7 @@ func main() {
 	i := 0
 	for {
 
-		r += .1
+		r += .05
 		if r > math.Pi {
 			r -= 2 * math.Pi
 		}
@@ -57,11 +57,9 @@ func main() {
 			i = 0
 		}
 
-		if i%20 == 0 {
-			r := float64(i%100) / 100
-			g := 1.0 - r
-			b := .7
-			fmt.Fprintf(os.Stdout, "command_quiet color BOT %f %f %f\n", r, g, b)
+		if i%10 == 0 {
+			fmt.Fprintf(os.Stdout, "command_quiet face BOT %d\n", i%3)
+			fmt.Fprintf(os.Stdout, "command_quiet head BOT %d\n", i%3)
 			os.Stdout.Sync()
 			for scanner.Scan() {
 				line := scanner.Text()
