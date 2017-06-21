@@ -55,6 +55,12 @@ func readConfig(filename string) {
 
 	data, err := ioutil.ReadFile(filename)
 	x(err)
+
+	if data[0] == 0x1F && data[1] == 0x8B {
+		configReplay(filename)
+		return
+	}
+
 	x(json.Unmarshal(data, &config))
 
 	if config.Port < 1 {

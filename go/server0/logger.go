@@ -14,6 +14,17 @@ const (
 
 func logger() {
 
+	if useReplay {
+		for {
+			select {
+			case <-chLog:
+			case <-chQuit:
+				close(chLogDone)
+				return
+			}
+		}
+	}
+
 	stamp := func() string {
 		t := time.Now()
 		return fmt.Sprintf("%02d:%02d.%03d", t.Minute(), t.Second(), t.Nanosecond()/1000000)

@@ -37,15 +37,22 @@ func controller() {
 	initNodding()
 	initShaking()
 	initTilting()
-	initRobot()
+	if !useReplay {
+		initRobot()
+	}
 
 	for {
 		select {
 		case <-chQuit:
 			return
 		case req := <-chIn:
+			if !useReplay {
+				chLog <- "R " + req.uid + " " + req.req
+			}
+			handleReq(req, useReplay, false)
+		case req := <-chReplay:
 			chLog <- "R " + req.uid + " " + req.req
-			handleReq(req)
+			handleReq(req, false, true)
 		case cmd := <-chCmd:
 			chLog <- "C " + cmd
 			handleCmd(cmd, true)
@@ -57,7 +64,7 @@ func controller() {
 }
 
 // handleReq is not run concurrently, so it must be fast
-func handleReq(req tRequest) {
+func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 
 	cmd := req.req
 	idx := req.idx
@@ -104,14 +111,18 @@ func handleReq(req tRequest) {
 		}
 
 		// only one goroutine modifying these variables, so no sync needed
-		user.lookat.x = X
-		user.lookat.y = Y
-		user.lookat.z = Z
-		user.roll = roll
-		user.audio = audio
+		if !ignoreIn {
+			user.lookat.x = X
+			user.lookat.y = Y
+			user.lookat.z = Z
+			user.roll = roll
+			user.audio = audio
+		}
 
 		doAudio(idx)
-		doRobot(idx)
+		if !useReplay {
+			doRobot(idx)
+		}
 
 		marked := len(words) == 7
 		if marked {
@@ -135,7 +146,9 @@ func handleReq(req tRequest) {
 					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
 				}
 			}
-			ch <- buf.String()
+			if !ignoreOut {
+				ch <- buf.String()
+			}
 			user.needSetup = false
 		}
 
@@ -164,13 +177,15 @@ func handleReq(req tRequest) {
 				rotV = doNod(idx, i, rotV)
 				tilt = doTilt(idx, i, tilt)
 
-				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
-					cube.uid,
-					user.n[cntrLookat],
-					math.Sin(rotH)*math.Cos(rotV),
-					math.Sin(rotV),
-					math.Cos(rotH)*math.Cos(rotV),
-					tilt)
+				if !ignoreOut {
+					ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
+						cube.uid,
+						user.n[cntrLookat],
+						math.Sin(rotH)*math.Cos(rotV),
+						math.Sin(rotV),
+						math.Cos(rotH)*math.Cos(rotV),
+						tilt)
+				}
 			}
 		}
 
@@ -178,32 +193,44 @@ func handleReq(req tRequest) {
 			clickHandle(idx, -1)
 		}
 
-		showAudio(ch, idx)
+		if !ignoreOut {
 
-		showLooking(ch, idx)
+			showAudio(ch, idx)
 
-		showSize(ch, idx)
+			showLooking(ch, idx)
 
-		showFaces(ch, idx)
+			showSize(ch, idx)
 
-		showHeads(ch, idx)
+			showFaces(ch, idx)
 
-		showColors(ch, idx)
+			showHeads(ch, idx)
+
+			showColors(ch, idx)
+
+		}
 
 	case "command": // from bot only
 
-		if !robotSelected {
-			cmd := strings.Join(words[1:], " ")
-			chLog <- "C " + cmd
-			handleCmd(cmd, true)
+		if !useReplay {
+
+			if !robotSelected {
+				cmd := strings.Join(words[1:], " ")
+				chLog <- "C " + cmd
+				handleCmd(cmd, true)
+			}
+
 		}
 
 	case "command_quiet": // from bot only
 
-		if !robotSelected {
-			cmd := strings.Join(words[1:], " ")
-			chLog <- "C " + cmd
-			handleCmd(cmd, false)
+		if !useReplay {
+
+			if !robotSelected {
+				cmd := strings.Join(words[1:], " ")
+				chLog <- "C " + cmd
+				handleCmd(cmd, false)
+			}
+
 		}
 
 	case "log":

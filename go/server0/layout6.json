@@ -2,5 +2,5 @@
     "users": ["A", "B", "C", "D", "E", "F"],
     "default_skip_gui": true,
 
-    "looking": true,
+    "looking": true
 }

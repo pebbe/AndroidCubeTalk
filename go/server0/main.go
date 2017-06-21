@@ -22,19 +22,22 @@ var (
 	chCmd      = make(chan string, 100)
 	chCmdQuiet = make(chan string, 100)
 	chLog      = make(chan string, 100)
+	chReplay   = make(chan tRequest, 100)
 	chLogDone  = make(chan bool)
 	chQuit     = make(chan bool)
 
 	withAudio   bool
 	withRobot   bool
 	withMasking bool
+
+	useReplay = false
 )
 
 func main() {
 
 	if len(os.Args) != 2 {
 		fmt.Printf(`
-Usage: %s config_file
+Usage: %s config_file|log_file.gz
 
 `, os.Args[0])
 		return
@@ -71,9 +74,15 @@ Usage: %s config_file
 		}
 	}()
 
-	go runRobot()
+	if !useReplay {
+		go runRobot()
+	}
 
-	gui()
+	if useReplay {
+		replay(os.Args[1])
+	} else {
+		gui()
+	}
 
 	finish()
 }
