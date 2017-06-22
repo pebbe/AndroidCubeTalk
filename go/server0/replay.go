@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kr/pretty"
+	//	"github.com/kr/pretty"
 
 	"bufio"
 	"bytes"
@@ -33,7 +33,7 @@ type jsonCube struct {
 	Head    int      `json:"head"`
 	Face    int      `json:"face"`
 	Sees    []string `json:"sees"`
-	Gui     bool     `json:"gid"`
+	Gui     bool     `json:"gui"`
 }
 
 type jsonUser struct {
@@ -80,9 +80,11 @@ func configReplay(filename string) {
 		m := reCommandLine.FindStringSubmatch(scanner.Text())
 		if m != nil && len(m) == 2 {
 			readConfig(m[1])
-			withRobot = false
-			config.Robot = ""
 			config.Script = nil
+			config.Robot = ""
+			config.RobotMasking = false
+			withRobot = false
+			withMasking = false
 			return
 		}
 	}
@@ -132,14 +134,6 @@ func replay(filename string) {
 			time.Sleep(t.Sub(logStart) - time.Now().Sub(replayStart))
 
 			switch words[1] {
-			case "B":
-				fmt.Println(line)
-			case "I":
-				if len(words) == 4 && words[2] == "User" && words[3] == "layout:" {
-					replaceUserLayout(scanner)
-				}
-			case "C":
-				chCmd <- strings.Join(words[2:], " ")
 			case "R":
 				uid := words[2]
 				chReplay <- tRequest{
@@ -147,6 +141,28 @@ func replay(filename string) {
 					idx: labels[uid],
 					req: strings.Join(words[3:], " "), // no newline
 				}
+			case "C":
+				chCmd <- strings.Join(words[2:], " ")
+			case "I":
+				if len(words) == 4 && words[3] == "layout:" {
+					if words[2] == "Global" {
+						//	replaceGlobalLayout(scanner)
+					} else if words[2] == "User" {
+						// this is instead of command "restart" in file "controller.go"
+						replaceUserLayout(scanner)
+						for _, user := range users {
+							user.needSetup = true
+						}
+						scriptStart()
+						started = true
+					} else {
+						fmt.Println(line)
+					}
+				} else {
+					fmt.Println(line)
+				}
+			case "B":
+				fmt.Println(line)
 			}
 		}
 	}
@@ -169,6 +185,8 @@ func replaceUserLayout(scanner *bufio.Scanner) {
 	data = strings.Replace(data, "(*main.tCube)(nil)", "nil", -1)
 	data = strings.Replace(data, "&main.tUser", "", -1)
 	data = strings.Replace(data, "&main.tCube", "", -1)
+	data = strings.Replace(data, "main.tXYZ{}", "{x:0,y:0,z:0}", -1)
+	data = strings.Replace(data, "main.tRGB{}", "{r:0,g:0,b:0}", -1)
 	data = strings.Replace(data, "main.tXYZ", "", -1)
 	data = strings.Replace(data, "main.tRGB", "", -1)
 
@@ -208,7 +226,7 @@ func replaceUserLayout(scanner *bufio.Scanner) {
 	err := json.Unmarshal([]byte(data), &p)
 	x(err)
 
-	pretty.Println(p)
+	// pretty.Println(p)
 
 	for i, user := range users {
 		for j, cube := range p[i].Cubes {
@@ -230,6 +248,69 @@ func replaceUserLayout(scanner *bufio.Scanner) {
 		}
 	}
 
-	pretty.Println(users)
+	// pretty.Println(users)
+}
 
+func replaceGlobalLayout(scanner *bufio.Scanner) {
+	var buf bytes.Buffer
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		buf.WriteString(line + "\n")
+		if reCloseBrace.MatchString(line) {
+			break
+		}
+	}
+
+	data := buf.String()
+
+	data = strings.Replace(data, "[]main.tCube{", "[", -1)
+	data = strings.Replace(data, "main.tXYZ{}", "{x:0,y:0,z:0}", -1)
+	data = strings.Replace(data, "main.tRGB{}", "{r:0,g:0,b:0}", -1)
+	data = strings.Replace(data, "main.tXYZ", "", -1)
+	data = strings.Replace(data, "main.tRGB", "", -1)
+
+	data = reComma.ReplaceAllStringFunc(data, func(s string) string {
+		return s[1:]
+	})
+
+	data = reHex.ReplaceAllStringFunc(data, func(s string) string {
+		a, _ := strconv.ParseInt(s[2:], 16, 32)
+		return fmt.Sprint(a)
+	})
+
+	data = reSees.ReplaceAllStringFunc(data, func(s string) string {
+		return strings.Replace(strings.Replace(s, "{", "[", 1), "}", "]", 1)
+	})
+
+	data = reKey.ReplaceAllStringFunc(data, func(s string) string {
+		return `"` + s[:len(s)-1] + `":`
+	})
+
+	data = strings.TrimSpace(data)
+	data = data[:len(data)-1] + "]"
+
+	fmt.Println(data)
+
+	p := []jsonCube{}
+	err := json.Unmarshal([]byte(data), &p)
+	x(err)
+
+	// pretty.Println(p)
+
+	for i, cube := range p {
+		cubes[i] = tCube{
+			uid:     cube.Uid,
+			pos:     tXYZ{x: cube.Pos.X, y: cube.Pos.Y, z: cube.Pos.Z},
+			forward: tXYZ{x: cube.Forward.X, y: cube.Forward.Y, z: cube.Forward.Z},
+			towards: tXYZ{x: cube.Towards.X, y: cube.Towards.Y, z: cube.Towards.Z},
+			color:   tRGB{r: cube.Color.R, g: cube.Color.G, b: cube.Color.B},
+			head:    cube.Head,
+			face:    cube.Face,
+			sees:    cube.Sees,
+			gui:     cube.Gui,
+		}
+	}
+
+	// pretty.Println(cubes)
 }

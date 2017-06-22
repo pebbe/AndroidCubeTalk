@@ -120,7 +120,10 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 		doAudio(idx)
 		doRobot(idx)
 
-		marked := len(words) == 7
+		marked := false
+		if !ignoreIn {
+			marked = len(words) == 7
+		}
 		if marked {
 			fmt.Printf("Mark %s -> %g %g %g    %.0f° right   %.0f° up\n",
 				req.uid,
@@ -129,23 +132,23 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 				math.Atan2(Y, math.Sqrt(X*X+Z*Z))/math.Pi*180)
 		}
 
-		if user.needSetup {
-			// this must be in one batch to make sure that the order is preserved
-			var buf bytes.Buffer
-			user.n[cntrSelfZ]++
-			fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
-			for _, cube := range user.cubes {
-				if cube != nil {
-					user.n[cntrEnterExit]++
-					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
-					user.n[cntrMoveto]++
-					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
+		if !ignoreOut {
+			if user.needSetup {
+				// this must be in one batch to make sure that the order is preserved
+				var buf bytes.Buffer
+				user.n[cntrSelfZ]++
+				fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
+				for _, cube := range user.cubes {
+					if cube != nil {
+						user.n[cntrEnterExit]++
+						fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
+						user.n[cntrMoveto]++
+						fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
+					}
 				}
-			}
-			if !ignoreOut {
 				ch <- buf.String()
+				user.needSetup = false
 			}
-			user.needSetup = false
 		}
 
 		user.n[cntrLookat]++
@@ -207,18 +210,26 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 
 	case "command": // from bot only
 
-		if !robotSelected {
-			cmd := strings.Join(words[1:], " ")
-			chLog <- "C " + cmd
-			handleCmd(cmd, true)
+		if !withReplay {
+
+			if !robotSelected {
+				cmd := strings.Join(words[1:], " ")
+				chLog <- "C " + cmd
+				handleCmd(cmd, true)
+			}
+
 		}
 
 	case "command_quiet": // from bot only
 
-		if !robotSelected {
-			cmd := strings.Join(words[1:], " ")
-			chLog <- "C " + cmd
-			handleCmd(cmd, false)
+		if !withReplay {
+
+			if !robotSelected {
+				cmd := strings.Join(words[1:], " ")
+				chLog <- "C " + cmd
+				handleCmd(cmd, false)
+			}
+
 		}
 
 	case "log":
@@ -272,8 +283,12 @@ func handleCmd(cmd string, verbose bool) {
 
 	case "start":
 
-		scriptStart()
-		started = true
+		if !withReplay {
+
+			scriptStart()
+			started = true
+
+		}
 
 	case "stop":
 
@@ -282,12 +297,16 @@ func handleCmd(cmd string, verbose bool) {
 
 	case "restart": // called by robot handler: should update layout
 
-		makeUsers()
-		for _, user := range users {
-			user.needSetup = true
+		if !withReplay {
+
+			makeUsers()
+			for _, user := range users {
+				user.needSetup = true
+			}
+			scriptStart()
+			started = true
+
 		}
-		scriptStart()
-		started = true
 
 	case "hideall":
 
