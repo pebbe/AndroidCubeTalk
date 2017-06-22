@@ -30,7 +30,7 @@ var (
 	withRobot   bool
 	withMasking bool
 
-	useReplay = false
+	withReplay = false
 )
 
 func main() {
@@ -74,11 +74,9 @@ Usage: %s config_file|log_file.gz
 		}
 	}()
 
-	if !useReplay {
-		go runRobot()
-	}
+	go runRobot()
 
-	if useReplay {
+	if withReplay {
 		replay(os.Args[1])
 	} else {
 		gui()

@@ -37,19 +37,17 @@ func controller() {
 	initNodding()
 	initShaking()
 	initTilting()
-	if !useReplay {
-		initRobot()
-	}
+	initRobot()
 
 	for {
 		select {
 		case <-chQuit:
 			return
 		case req := <-chIn:
-			if !useReplay {
+			if !withReplay {
 				chLog <- "R " + req.uid + " " + req.req
 			}
-			handleReq(req, useReplay, false)
+			handleReq(req, withReplay, false)
 		case req := <-chReplay:
 			chLog <- "R " + req.uid + " " + req.req
 			handleReq(req, false, true)
@@ -120,9 +118,7 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 		}
 
 		doAudio(idx)
-		if !useReplay {
-			doRobot(idx)
-		}
+		doRobot(idx)
 
 		marked := len(words) == 7
 		if marked {
@@ -211,26 +207,18 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 
 	case "command": // from bot only
 
-		if !useReplay {
-
-			if !robotSelected {
-				cmd := strings.Join(words[1:], " ")
-				chLog <- "C " + cmd
-				handleCmd(cmd, true)
-			}
-
+		if !robotSelected {
+			cmd := strings.Join(words[1:], " ")
+			chLog <- "C " + cmd
+			handleCmd(cmd, true)
 		}
 
 	case "command_quiet": // from bot only
 
-		if !useReplay {
-
-			if !robotSelected {
-				cmd := strings.Join(words[1:], " ")
-				chLog <- "C " + cmd
-				handleCmd(cmd, false)
-			}
-
+		if !robotSelected {
+			cmd := strings.Join(words[1:], " ")
+			chLog <- "C " + cmd
+			handleCmd(cmd, false)
 		}
 
 	case "log":

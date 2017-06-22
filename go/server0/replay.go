@@ -1,22 +1,69 @@
 package main
 
 import (
+	"github.com/kr/pretty"
+
 	"bufio"
+	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
+type jsonRGB struct {
+	R, G, B float64
+}
+
+type jsonXYZ struct {
+	X, Y, Z float64
+}
+
+// This has data on how a user sees another cube, except for actual head movement
+type jsonCube struct {
+	Uid     string   `json:"uid"`
+	Pos     jsonXYZ  `json:"pos"`
+	Forward jsonXYZ  `json:"forward"`
+	Towards jsonXYZ  `json:"towards"`
+	Color   jsonRGB  `json:"color"`
+	Head    int      `json:"head"`
+	Face    int      `json:"face"`
+	Sees    []string `json:"sees"`
+	Gui     bool     `json:"gid"`
+}
+
+type jsonUser struct {
+	Uid       string               `json:"uid"`
+	Needsetup bool                 `json:"needSetup"`
+	Selfz     float64              `json:"selfZ"`
+	Lookat    jsonXYZ              `json:"lookat"`
+	Roll      float64              `json:"roll"`
+	Audio     float64              `json:"audio"`
+	Cubes     []*jsonCube          `json:"cubes"`
+	N         [numberOfCtrs]uint64 `json:"n"`
+}
+
 var (
 	reCommandLine = regexp.MustCompile(` I Command line: \[\]string{".*?", "(.*)"}`)
 	reLogLine     = regexp.MustCompile(`^[0-9]+:[0-9]+.[0-9]+`)
+
+	reHex        = regexp.MustCompile("0x[0-9a-fA-F]+")
+	reKey        = regexp.MustCompile("[a-zA-Z]+:")
+	reCubes      = regexp.MustCompile(`cubes:\s*{`)
+	reN1         = regexp.MustCompile(`},\s*n:\s*{`)
+	reN2         = regexp.MustCompile(`n:\s*\[.*}`)
+	reComma      = regexp.MustCompile(`,\s*}`)
+	reSees       = regexp.MustCompile(`sees:.*}`)
+	reNil        = regexp.MustCompile(`\bnil\b`)
+	reCloseBrace = regexp.MustCompile(`^\s*}\s*$`)
 )
 
 func configReplay(filename string) {
-	useReplay = true
+	withReplay = true
 
 	fp, err := os.Open(filename)
 	x(err)
@@ -33,6 +80,9 @@ func configReplay(filename string) {
 		m := reCommandLine.FindStringSubmatch(scanner.Text())
 		if m != nil && len(m) == 2 {
 			readConfig(m[1])
+			withRobot = false
+			config.Robot = ""
+			config.Script = nil
 			return
 		}
 	}
@@ -43,8 +93,7 @@ func configReplay(filename string) {
 func replay(filename string) {
 	time.Sleep(time.Millisecond * 100)
 	fmt.Print("Press ENTER to start...")
-	r := bufio.NewReader(os.Stdin)
-	r.ReadLine()
+	bufio.NewReader(os.Stdin).ReadLine()
 
 	fp, err := os.Open(filename)
 	x(err)
@@ -65,9 +114,6 @@ func replay(filename string) {
 
 	replayStart := time.Now()
 
-	fmt.Println(logStart)
-	fmt.Println(replayStart)
-
 	for scanner.Scan() {
 		line := scanner.Text()
 		if reLogLine.MatchString(line) {
@@ -84,9 +130,14 @@ func replay(filename string) {
 			}
 			logPrev = t
 			time.Sleep(t.Sub(logStart) - time.Now().Sub(replayStart))
-			fmt.Println(line)
 
 			switch words[1] {
+			case "B":
+				fmt.Println(line)
+			case "I":
+				if len(words) == 4 && words[2] == "User" && words[3] == "layout:" {
+					replaceUserLayout(scanner)
+				}
 			case "C":
 				chCmd <- strings.Join(words[2:], " ")
 			case "R":
@@ -99,4 +150,86 @@ func replay(filename string) {
 			}
 		}
 	}
+}
+
+func replaceUserLayout(scanner *bufio.Scanner) {
+	var buf bytes.Buffer
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		buf.WriteString(line + "\n")
+		if reCloseBrace.MatchString(line) {
+			break
+		}
+	}
+
+	data := buf.String()
+
+	data = strings.Replace(data, "[]*main.tUser{", "[", -1)
+	data = strings.Replace(data, "(*main.tCube)(nil)", "nil", -1)
+	data = strings.Replace(data, "&main.tUser", "", -1)
+	data = strings.Replace(data, "&main.tCube", "", -1)
+	data = strings.Replace(data, "main.tXYZ", "", -1)
+	data = strings.Replace(data, "main.tRGB", "", -1)
+
+	data = reComma.ReplaceAllStringFunc(data, func(s string) string {
+		return s[1:]
+	})
+
+	data = reHex.ReplaceAllStringFunc(data, func(s string) string {
+		a, _ := strconv.ParseInt(s[2:], 16, 32)
+		return fmt.Sprint(a)
+	})
+
+	data = reCubes.ReplaceAllLiteralString(data, "cubes: [")
+
+	data = reN1.ReplaceAllLiteralString(data, "],\n\t    n: [")
+
+	data = reNil.ReplaceAllLiteralString(data, "null")
+
+	data = reN2.ReplaceAllStringFunc(data, func(s string) string {
+		return s[:len(s)-1] + `]`
+	})
+
+	data = reSees.ReplaceAllStringFunc(data, func(s string) string {
+		return strings.Replace(strings.Replace(s, "{", "[", 1), "}", "]", 1)
+	})
+
+	data = reKey.ReplaceAllStringFunc(data, func(s string) string {
+		return `"` + s[:len(s)-1] + `":`
+	})
+
+	data = strings.TrimSpace(data)
+	data = data[:len(data)-1] + "]"
+
+	fmt.Println(data)
+
+	p := []jsonUser{}
+	err := json.Unmarshal([]byte(data), &p)
+	x(err)
+
+	pretty.Println(p)
+
+	for i, user := range users {
+		for j, cube := range p[i].Cubes {
+			if cube == nil {
+				user.cubes[j] = nil
+			} else {
+				user.cubes[j] = &tCube{
+					uid:     cube.Uid,
+					pos:     tXYZ{x: cube.Pos.X, y: cube.Pos.Y, z: cube.Pos.Z},
+					forward: tXYZ{x: cube.Forward.X, y: cube.Forward.Y, z: cube.Forward.Z},
+					towards: tXYZ{x: cube.Towards.X, y: cube.Towards.Y, z: cube.Towards.Z},
+					color:   tRGB{r: cube.Color.R, g: cube.Color.G, b: cube.Color.B},
+					head:    cube.Head,
+					face:    cube.Face,
+					sees:    cube.Sees,
+					gui:     cube.Gui,
+				}
+			}
+		}
+	}
+
+	pretty.Println(users)
+
 }

@@ -14,7 +14,7 @@ const (
 
 func logger() {
 
-	if useReplay {
+	if withReplay {
 		for {
 			select {
 			case <-chLog:
