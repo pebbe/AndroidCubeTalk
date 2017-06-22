@@ -139,9 +139,6 @@ func handleConnection(conn net.Conn) {
 			select {
 			case txt := <-out: // including newline
 				fmt.Fprint(conn, txt) // no newline
-				if strings.Contains(txt, "enter") || strings.Contains(txt, "exit") {
-					fmt.Print(">>>\t\t\t", txt)
-				}
 			default:
 				busy = false
 			}

@@ -1,5 +1,5 @@
 {
-    "COMMENT1": "If there is a robot, it must be last, or masking will go horribly wrong"
+    "COMMENT1": "If there is a robot, it must be last, or masking will go horribly wrong",
     "users": ["A", "B", "C", "D", "E", "BOT"],
     "default_skip_gui": true,
 

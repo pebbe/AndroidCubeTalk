@@ -300,8 +300,14 @@ func handleCmd(cmd string, verbose bool) {
 		if !withReplay {
 
 			makeUsers()
-			for _, user := range users {
+			for idx, user := range users {
 				user.needSetup = true
+				resetAudio(idx)
+				resetSize(idx)
+				resetLooking(idx)
+				resetFaces(idx)
+				resetHeads(idx)
+				resetColors(idx)
 			}
 			scriptStart()
 			started = true

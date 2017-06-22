@@ -143,6 +143,9 @@ func replay(filename string) {
 				}
 			case "C":
 				chCmd <- strings.Join(words[2:], " ")
+				if words[2] == "restart" {
+					useLookAt = true // robots
+				}
 			case "I":
 				if len(words) == 4 && words[3] == "layout:" {
 					if words[2] == "Global" {
@@ -150,8 +153,14 @@ func replay(filename string) {
 					} else if words[2] == "User" {
 						// this is instead of command "restart" in file "controller.go"
 						replaceUserLayout(scanner)
-						for _, user := range users {
+						for idx, user := range users {
 							user.needSetup = true
+							resetAudio(idx)
+							resetSize(idx)
+							resetLooking(idx)
+							resetFaces(idx)
+							resetHeads(idx)
+							resetColors(idx)
 						}
 						scriptStart()
 						started = true
@@ -163,6 +172,9 @@ func replay(filename string) {
 				}
 			case "B":
 				fmt.Println(line)
+				if strings.Contains(line, "Users selected") {
+					useLookAt = false // robots
+				}
 			}
 		}
 	}
@@ -220,7 +232,7 @@ func replaceUserLayout(scanner *bufio.Scanner) {
 	data = strings.TrimSpace(data)
 	data = data[:len(data)-1] + "]"
 
-	fmt.Println(data)
+	// fmt.Println(data)
 
 	p := []jsonUser{}
 	err := json.Unmarshal([]byte(data), &p)
@@ -290,7 +302,7 @@ func replaceGlobalLayout(scanner *bufio.Scanner) {
 	data = strings.TrimSpace(data)
 	data = data[:len(data)-1] + "]"
 
-	fmt.Println(data)
+	// fmt.Println(data)
 
 	p := []jsonCube{}
 	err := json.Unmarshal([]byte(data), &p)
