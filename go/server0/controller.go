@@ -44,12 +44,9 @@ func controller() {
 		case <-chQuit:
 			return
 		case req := <-chIn:
-			if !withReplay {
-				chLog <- "R " + req.uid + " " + req.req
-			}
+			chLog <- "R " + req.uid + " " + req.req
 			handleReq(req, withReplay, false)
 		case req := <-chReplay:
-			chLog <- "R " + req.uid + " " + req.req
 			handleReq(req, false, true)
 		case cmd := <-chCmd:
 			chLog <- "C " + cmd
@@ -151,32 +148,32 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 			}
 		}
 
-		user.n[cntrLookat]++
-		for i, cube := range user.cubes {
+		if !ignoreOut {
+			user.n[cntrLookat]++
+			for i, cube := range user.cubes {
 
-			if cube != nil {
+				if cube != nil {
 
-				if marked && isLookingAt(idx, i) {
-					chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
-					fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
-					marked = false
-					clickHandle(idx, i)
-				}
+					if marked && isLookingAt(idx, i) {
+						chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
+						fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
+						marked = false
+						clickHandle(idx, i)
+					}
 
-				l := users[i].lookat
-				f := cube.forward
+					l := users[i].lookat
+					f := cube.forward
 
-				// assumption: forward is horizontal
+					// assumption: forward is horizontal
 
-				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-				rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
-				tilt := users[i].roll
+					rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
+					rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
+					tilt := users[i].roll
 
-				rotH = doShake(idx, i, rotH)
-				rotV = doNod(idx, i, rotV)
-				tilt = doTilt(idx, i, tilt)
+					rotH = doShake(idx, i, rotH)
+					rotV = doNod(idx, i, rotV)
+					tilt = doTilt(idx, i, tilt)
 
-				if !ignoreOut {
 					ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
 						cube.uid,
 						user.n[cntrLookat],
@@ -210,26 +207,18 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 
 	case "command": // from bot only
 
-		if !withReplay {
-
-			if !robotSelected {
-				cmd := strings.Join(words[1:], " ")
-				chLog <- "C " + cmd
-				handleCmd(cmd, true)
-			}
-
+		if !robotSelected {
+			cmd := strings.Join(words[1:], " ")
+			chLog <- "C " + cmd
+			handleCmd(cmd, true)
 		}
 
 	case "command_quiet": // from bot only
 
-		if !withReplay {
-
-			if !robotSelected {
-				cmd := strings.Join(words[1:], " ")
-				chLog <- "C " + cmd
-				handleCmd(cmd, false)
-			}
-
+		if !robotSelected {
+			cmd := strings.Join(words[1:], " ")
+			chLog <- "C " + cmd
+			handleCmd(cmd, false)
 		}
 
 	case "log":

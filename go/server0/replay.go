@@ -135,11 +135,13 @@ func replay(filename string) {
 
 			switch words[1] {
 			case "R":
-				uid := words[2]
-				chReplay <- tRequest{
-					uid: uid,
-					idx: labels[uid],
-					req: strings.Join(words[3:], " "), // no newline
+				if !(len(words) > 3 && (words[3] == "command" || words[3] == "command_quiet")) {
+					uid := words[2]
+					chReplay <- tRequest{
+						uid: uid,
+						idx: labels[uid],
+						req: strings.Join(words[3:], " "), // no newline
+					}
 				}
 			case "C":
 				chCmd <- strings.Join(words[2:], " ")
