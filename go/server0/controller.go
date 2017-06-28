@@ -105,13 +105,17 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 			}
 		}
 
-		// only one goroutine modifying these variables, so no sync needed
 		if !ignoreIn {
+			// only one goroutine modifying these variables, so no sync needed
 			user.lookat.x = X
 			user.lookat.y = Y
 			user.lookat.z = Z
 			user.roll = roll
 			user.audio = audio
+		}
+
+		if ignoreOut {
+			return
 		}
 
 		doAudio(idx)
@@ -129,59 +133,55 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 				math.Atan2(Y, math.Sqrt(X*X+Z*Z))/math.Pi*180)
 		}
 
-		if !ignoreOut {
-			if user.needSetup {
-				// this must be in one batch to make sure that the order is preserved
-				var buf bytes.Buffer
-				user.n[cntrSelfZ]++
-				fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
-				for _, cube := range user.cubes {
-					if cube != nil {
-						user.n[cntrEnterExit]++
-						fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
-						user.n[cntrMoveto]++
-						fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
-					}
+		if user.needSetup {
+			// this must be in one batch to make sure that the order is preserved
+			var buf bytes.Buffer
+			user.n[cntrSelfZ]++
+			fmt.Fprintf(&buf, "self %d %g\n", user.n[cntrSelfZ], user.selfZ)
+			for _, cube := range user.cubes {
+				if cube != nil {
+					user.n[cntrEnterExit]++
+					fmt.Fprintf(&buf, "enter %s %d\n", cube.uid, user.n[cntrEnterExit])
+					user.n[cntrMoveto]++
+					fmt.Fprintf(&buf, "moveto %s %d %g %g %g\n", cube.uid, user.n[cntrMoveto], cube.pos.x, cube.pos.y, cube.pos.z)
 				}
-				ch <- buf.String()
-				user.needSetup = false
 			}
+			ch <- buf.String()
+			user.needSetup = false
 		}
 
-		if !ignoreOut {
-			user.n[cntrLookat]++
-			for i, cube := range user.cubes {
+		user.n[cntrLookat]++
+		for i, cube := range user.cubes {
 
-				if cube != nil {
+			if cube != nil {
 
-					if marked && isLookingAt(idx, i) {
-						chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
-						fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
-						marked = false
-						clickHandle(idx, i)
-					}
-
-					l := users[i].lookat
-					f := cube.forward
-
-					// assumption: forward is horizontal
-
-					rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
-					rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
-					tilt := users[i].roll
-
-					rotH = doShake(idx, i, rotH)
-					rotV = doNod(idx, i, rotV)
-					tilt = doTilt(idx, i, tilt)
-
-					ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
-						cube.uid,
-						user.n[cntrLookat],
-						math.Sin(rotH)*math.Cos(rotV),
-						math.Sin(rotV),
-						math.Cos(rotH)*math.Cos(rotV),
-						tilt)
+				if marked && isLookingAt(idx, i) {
+					chLog <- fmt.Sprintf("I Mark %s -> %s", req.uid, cube.uid)
+					fmt.Printf("Mark %s -> %s\n", req.uid, cube.uid)
+					marked = false
+					clickHandle(idx, i)
 				}
+
+				l := users[i].lookat
+				f := cube.forward
+
+				// assumption: forward is horizontal
+
+				rotH := math.Atan2(l.x, l.z) - math.Atan2(f.x, -f.z)
+				rotV := math.Atan2(l.y, math.Sqrt(l.x*l.x+l.z*l.z))
+				tilt := users[i].roll
+
+				rotH = doShake(idx, i, rotH)
+				rotV = doNod(idx, i, rotV)
+				tilt = doTilt(idx, i, tilt)
+
+				ch <- fmt.Sprintf("lookat %s %d %g %g %g %g\n",
+					cube.uid,
+					user.n[cntrLookat],
+					math.Sin(rotH)*math.Cos(rotV),
+					math.Sin(rotV),
+					math.Cos(rotH)*math.Cos(rotV),
+					tilt)
 			}
 		}
 
@@ -189,21 +189,17 @@ func handleReq(req tRequest, ignoreIn, ignoreOut bool) {
 			clickHandle(idx, -1)
 		}
 
-		if !ignoreOut {
+		showAudio(ch, idx)
 
-			showAudio(ch, idx)
+		showLooking(ch, idx)
 
-			showLooking(ch, idx)
+		showSize(ch, idx)
 
-			showSize(ch, idx)
+		showFaces(ch, idx)
 
-			showFaces(ch, idx)
+		showHeads(ch, idx)
 
-			showHeads(ch, idx)
-
-			showColors(ch, idx)
-
-		}
+		showColors(ch, idx)
 
 	case "command": // from bot only
 
